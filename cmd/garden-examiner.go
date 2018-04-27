@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	landscaper "github.com/afritzler/landscaper/pkg"
+	landscaper "github.com/afritzler/garden-examiner/pkg"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
