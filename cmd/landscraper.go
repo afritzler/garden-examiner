@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	landscraper "github.com/afritzler/landscraper/pkg"
+	landscaper "github.com/afritzler/landscaper/pkg"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -15,7 +15,7 @@ func main() {
 		panic(err)
 	}
 
-	g, err := landscraper.NewGarden(config)
+	g, err := landscaper.NewGarden(config)
 	if err != nil {
 		panic(err)
 	}
