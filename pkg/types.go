@@ -4,10 +4,15 @@ import (
 	"fmt"
 
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
+
+type RuntimeObjectWrapper interface {
+	GetRuntimeObject() runtime.Object
+}
 
 type ShootName struct {
 	name        string
@@ -24,6 +29,10 @@ func (n *ShootName) GetProjectName() string {
 
 func (n *ShootName) String() string {
 	return fmt.Sprintf("%s/%s", n.projectname, n.name)
+}
+
+func NewShootName(project, name string) *ShootName {
+	return &ShootName{name, project}
 }
 
 func NewShootNameFromShootManifest(garden Garden, shoot v1beta1.Shoot) (*ShootName, error) {

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
+	"github.com/gardener/gardener/pkg/operation/common"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 )
@@ -13,8 +15,12 @@ const secretkubeconfig = "kubeconfig"
 type Seed interface {
 	GetName() string
 	GetManifest() *v1beta1.Seed
+	GetCloud() v1beta1.SeedCloud
 	GetKubeconfig() ([]byte, error)
 	GetClientset() (*kubernetes.Clientset, error)
+	GetShoot() *ShootName
+	GetInfrastructure() string
+	RuntimeObjectWrapper
 }
 
 type seed struct {
@@ -32,6 +38,14 @@ func (s *seed) GetName() string {
 }
 
 func (s *seed) GetManifest() *v1beta1.Seed {
+	return &s.manifest
+}
+
+func (s *seed) GetCloud() v1beta1.SeedCloud {
+	return s.manifest.Spec.Cloud
+}
+
+func (s *seed) GetRuntimeObject() runtime.Object {
 	return &s.manifest
 }
 
@@ -57,4 +71,23 @@ func (s *seed) GetClientset() (*kubernetes.Clientset, error) {
 		return nil, err
 	}
 	return NewClientFromBytes(bytes)
+}
+
+func (s *seed) GetInfrastructure() string {
+	p, err := s.garden.GetProfile(s.manifest.Spec.Cloud.Profile)
+	if err != nil {
+		return p.GetInfrastructure()
+	}
+	return "unknown"
+}
+
+func (s *seed) GetShoot() *ShootName {
+	for _, o := range s.manifest.ObjectMeta.GetOwnerReferences() {
+		if o.APIVersion == v1beta1.SchemeGroupVersion.String() {
+			if o.Kind == "Shoot" {
+				return NewShootName(common.GardenNamespace, o.Name)
+			}
+		}
+	}
+	return nil
 }
