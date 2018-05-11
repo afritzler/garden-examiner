@@ -1,6 +1,8 @@
 package seed
 
 import (
+	//"fmt"
+
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/pkg"
@@ -28,6 +30,7 @@ func (this *InfraFilter) Match(ctx *context.Context, elem interface{}, opts *cmd
 	infra := opts.GetOptionValue(constants.O_INFRA)
 
 	if infra != nil {
+		//fmt.Printf("checking infra '%s' to be '%s'\n", s.GetInfrastructure(), *infra)
 		if s.GetInfrastructure() != *infra {
 			return false, nil
 		}

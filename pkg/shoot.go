@@ -17,13 +17,13 @@ type Shoot interface {
 	GetSeedName() string
 	GetSeed() (Seed, error)
 	GetProject() (Project, error)
-	GetKubeconfig() ([]byte, error)
 	GetSecretRef() (*corev1.SecretReference, error)
 	GetClientset() (*kubernetes.Clientset, error)
 	GetInfrastructure() string
 	GetNodeCount() (int, error)
 	GetState() string
 	GetError() string
+	KubeconfigProvider
 	RuntimeObjectWrapper
 }
 

@@ -19,6 +19,54 @@ type Handler interface {
 	Out(*context.Context)
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Basic handler
+
+type HandlerAdapter interface {
+	GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error)
+	GetFilter() Filter
+}
+
+type BasicHandler struct {
+	output Output
+	elems  IndexedAccess
+	impl   HandlerAdapter
+}
+
+func NewBasicHandler(o Output, impl HandlerAdapter) *BasicHandler {
+	return &BasicHandler{o, nil, impl}
+}
+
+func (this *BasicHandler) RequireScan(name string) bool {
+	return false
+}
+
+func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (Iterator, error) {
+	if this.elems == nil {
+		elems, err := this.impl.GetAll(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		this.elems = NewIndexedSliceAccess(elems)
+	}
+	return NewIndexedIterator(this.elems), nil
+}
+
+func (this *BasicHandler) Match(ctx *context.Context, e interface{}, opts *cmdint.Options) (bool, error) {
+	return this.impl.GetFilter().Match(ctx, e, opts)
+}
+
+func (this *BasicHandler) Add(ctx *context.Context, e interface{}) error {
+	return this.output.Add(ctx, e)
+}
+
+func (this *BasicHandler) Out(ctx *context.Context) {
+	this.output.Out(ctx)
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Standard Command Logic
+
 func Doit(opts *cmdint.Options, h Handler) error {
 	ctx := context.Get(opts)
 

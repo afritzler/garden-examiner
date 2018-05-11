@@ -14,6 +14,10 @@ type RuntimeObjectWrapper interface {
 	GetRuntimeObject() runtime.Object
 }
 
+type KubeconfigProvider interface {
+	GetKubeconfig() ([]byte, error)
+}
+
 type ShootName struct {
 	name        string
 	projectname string

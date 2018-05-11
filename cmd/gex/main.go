@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	_ "github.com/afritzler/garden-examiner/cmd/gex/profile"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/project"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/seed"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/shoot"

@@ -16,10 +16,10 @@ type Seed interface {
 	GetName() string
 	GetManifest() *v1beta1.Seed
 	GetCloud() v1beta1.SeedCloud
-	GetKubeconfig() ([]byte, error)
 	GetClientset() (*kubernetes.Clientset, error)
 	GetShoot() *ShootName
 	GetInfrastructure() string
+	KubeconfigProvider
 	RuntimeObjectWrapper
 }
 
@@ -75,7 +75,7 @@ func (s *seed) GetClientset() (*kubernetes.Clientset, error) {
 
 func (s *seed) GetInfrastructure() string {
 	p, err := s.garden.GetProfile(s.manifest.Spec.Cloud.Profile)
-	if err != nil {
+	if err == nil {
 		return p.GetInfrastructure()
 	}
 	return "unknown"
