@@ -20,7 +20,7 @@ type ProjectFilter struct {
 var _ util.Filter = &ProjectFilter{}
 
 func (this *ProjectFilter) AddOptions(cmd cmdint.ConfigurableCmdTabCommand) cmdint.ConfigurableCmdTabCommand {
-	return cmd.ArgOption(constants.O_PROJECT)
+	return cmd.ArgOption(constants.O_PROJECT).Context(constants.O_SEL_PROJECT)
 }
 
 func (this *ProjectFilter) Match(ctx *context.Context, elem interface{}, opts *cmdint.Options) (bool, error) {

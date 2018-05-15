@@ -6,6 +6,7 @@ import (
 	_ "github.com/afritzler/garden-examiner/cmd/gex/profile"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/project"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/seed"
+	_ "github.com/afritzler/garden-examiner/cmd/gex/select"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/shoot"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
@@ -18,7 +19,10 @@ import (
 func main() {
 	cmdint.MainTab().CmdDescription("garden examiner").CmdArgDescription("<options> <command> <options>").
 		SetupFunction(setup).
-		ArgOption(constants.O_KUBECONFIG).Env("KUBECONFIG")
+		ArgOption(constants.O_KUBECONFIG).Env("KUBECONFIG").
+		ArgOption(constants.O_SEL_SHOOT).Env("GEX_SHOOT").
+		ArgOption(constants.O_SEL_PROJECT).Env("GEX_PROJECT").
+		ArgOption(constants.O_SEL_SEED).Env("GEX_SEED")
 	cmdint.Run()
 }
 

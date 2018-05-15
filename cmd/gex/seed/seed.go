@@ -3,6 +3,7 @@ package seed
 import (
 	"fmt"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
@@ -38,6 +39,11 @@ func NewHandler(o util.Output) *Handler {
 	h := &Handler{}
 	h.BasicHandler = util.NewBasicHandler(o, h)
 	return h
+}
+
+func (this *Handler) GetDefault(opts *cmdint.Options) *string {
+	shoot := opts.GetOptionValue(constants.O_SEL_SEED)
+	return shoot
 }
 
 func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {

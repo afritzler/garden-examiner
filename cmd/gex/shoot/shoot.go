@@ -46,6 +46,11 @@ func NewHandler(o util.Output) *Handler {
 	return h
 }
 
+func (this *Handler) GetDefault(opts *cmdint.Options) *string {
+	shoot := opts.GetOptionValue(constants.O_SEL_SHOOT)
+	return shoot
+}
+
 func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {
 	elems, err := ctx.Garden.GetShoots()
 	if err != nil {
@@ -78,7 +83,7 @@ func (this *Handler) MatchName(e interface{}, name string) (bool, error) {
 
 func (this *Handler) Get(ctx *context.Context, name string) (interface{}, error) {
 	i := strings.Index(name, "/")
-	sn := gube.NewShootName(string(name[:i]), string(name[i+1]))
+	sn := gube.NewShootName(string(name[:i]), string(name[i+1:]))
 	if this.data == nil {
 		return ctx.Garden.GetShoot(sn)
 	}

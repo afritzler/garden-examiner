@@ -10,6 +10,7 @@ import (
 )
 
 type Handler interface {
+	GetDefault(opts *cmdint.Options) *string
 	RequireScan(string) bool
 	MatchName(interface{}, string) (bool, error)
 	Get(*context.Context, string) (interface{}, error)
@@ -41,6 +42,10 @@ func (this *BasicHandler) RequireScan(name string) bool {
 	return false
 }
 
+func (this *BasicHandler) GetDefault(opts *cmdint.Options) *string {
+	return nil
+}
+
 func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (Iterator, error) {
 	if this.elems == nil {
 		elems, err := this.impl.GetAll(ctx, opts)
@@ -70,6 +75,12 @@ func (this *BasicHandler) Out(ctx *context.Context) {
 func Doit(opts *cmdint.Options, h Handler) error {
 	ctx := context.Get(opts)
 
+	if len(opts.Arguments) == 0 {
+		if def := h.GetDefault(opts); def != nil {
+			//fmt.Printf("DEFAULT: %s\n", *def)
+			opts.Arguments = []string{*def}
+		}
+	}
 	if len(opts.Arguments) > 0 && (len(opts.Arguments) != 1 || opts.Arguments[0] != "all") {
 		return doDedicated(ctx, opts, h)
 	} else {
