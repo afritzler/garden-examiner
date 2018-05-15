@@ -15,7 +15,7 @@ import (
 
 var cmdtab cmdint.ConfigurableCmdTab = cmdint.NewCmdTab("select").
 	DefaultFunction(cmd_select).
-	CmdDescription("set default shoot/eed/project\n" +
+	CmdDescription("set default shoot/seed/project\n" +
 		"works only with the gex alias feeding the appropriate\n" +
 		"environment variables.").
 	CmdArgDescription("<command> <element name>")
@@ -76,6 +76,8 @@ func (this *select_output) Out(ctx *context.Context) {
 		seed = e.GetSeedName()
 	case gube.Seed:
 		seed = e.GetName()
+	case gube.Project:
+		project = e.GetName()
 	default:
 		panic(fmt.Errorf("invalid elem type for select: %T\n", this.elem))
 	}
