@@ -6,11 +6,13 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
+	"github.com/afritzler/garden-examiner/cmd/gex/verb"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 
 func init() {
-	filters.AddOptions(GetCmdTab().SimpleCommand("get", get).CmdDescription("get profile(s)").CmdArgDescription("[<seed>]")).
+	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription("get profile(s)").
+		CmdArgDescription("[<profile>]")).
 		ArgOption(constants.O_OUTPUT).Short('o')
 }
 

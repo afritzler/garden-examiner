@@ -8,6 +8,7 @@ import (
 	_ "github.com/afritzler/garden-examiner/cmd/gex/seed"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/select"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/shoot"
+	_ "github.com/afritzler/garden-examiner/cmd/gex/verb"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"

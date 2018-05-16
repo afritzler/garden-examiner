@@ -50,26 +50,20 @@ func cmd_select(opts *cmdint.Options) error {
 }
 
 type select_output struct {
-	elem interface{}
+	*util.SingleElementOutput
 }
 
-func NewSelectOutput() util.Output {
-	return &select_output{}
-}
+var _ util.Output = &select_output{}
 
-func (this *select_output) Add(ctx *context.Context, e interface{}) error {
-	if this.elem == nil {
-		this.elem = e
-		return nil
-	}
-	return fmt.Errorf("only one element can be selected, but multiple elements selected/found")
+func NewSelectOutput() *select_output {
+	return &select_output{util.NewSingleElementOutput()}
 }
 
 func (this *select_output) Out(ctx *context.Context) {
 	shoot := ""
 	seed := ""
 	project := ""
-	switch e := this.elem.(type) {
+	switch e := this.Elem.(type) {
 	case gube.Shoot:
 		shoot = e.GetName().String()
 		project = e.GetName().GetProjectName()
@@ -79,9 +73,13 @@ func (this *select_output) Out(ctx *context.Context) {
 	case gube.Project:
 		project = e.GetName()
 	default:
-		panic(fmt.Errorf("invalid elem type for select: %T\n", this.elem))
+		panic(fmt.Errorf("invalid elem type for select: %T\n", this.Elem))
 	}
 
+	this.Write(&shoot, &project, &seed)
+}
+
+func (this *select_output) Write(shoot, project, seed *string) {
 	f := os.NewFile(3, "env-setting")
 	if f == nil {
 		fmt.Printf("Please use the gex alias to make the selection effective.\n")
@@ -91,12 +89,12 @@ func (this *select_output) Out(ctx *context.Context) {
 	envout(f, seed, "SEED")
 }
 
-func envout(f *os.File, value, key string) {
+func envout(f *os.File, value *string, key string) {
 	line := ""
-	if value == "" {
+	if value == nil || *value == "" {
 		line = fmt.Sprintf("unset GEX_%s", key)
 	} else {
-		line = fmt.Sprintf("export GEX_%s=\"%v\"", key, value)
+		line = fmt.Sprintf("export GEX_%s=\"%v\"", key, *value)
 	}
 	if f != nil {
 		fmt.Fprintf(f, "%s\n", line)
