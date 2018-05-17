@@ -13,6 +13,8 @@ type kubeconfig_output struct {
 	data []string
 }
 
+var _Output = kubeconfig_output{}
+
 func NewKubeconfigOutput() Output {
 	return &kubeconfig_output{[]string{}}
 }
@@ -27,11 +29,12 @@ func (this *kubeconfig_output) Add(ctx *context.Context, e interface{}) error {
 	return nil
 }
 
-func (this *kubeconfig_output) Out(ctx *context.Context) {
+func (this *kubeconfig_output) Out(ctx *context.Context) error {
 	for _, cfg := range this.data {
 		if !strings.HasPrefix(cfg, "---\n") {
 			fmt.Println("---")
 		}
 		fmt.Println(cfg)
 	}
+	return nil
 }

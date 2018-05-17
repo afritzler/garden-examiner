@@ -10,6 +10,7 @@ func init() {
 			"The first argument is the element type followed by",
 			"element names and/or options",
 		)
+
 	NewVerb("kubeconfig", get).CmdArgDescription("<cluster type> ...").
 		CmdDescription("general kubeconfig get command",
 			"The first argument is the cluster type (shoot or seed) followed by",
@@ -42,7 +43,7 @@ func Add(tab cmdint.ConfigurableCmdTab, name string, cmd cmdint.CommandFunction)
 	c := tab.SimpleCommand(name, cmd)
 	v := GetVerb(name)
 	if v != nil {
-		v.Command(tab.GetName(), c.AsCommand())
+		v.Command(tab.GetName(), c.AsSubCommand())
 	}
 	return c
 }

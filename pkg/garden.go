@@ -1,6 +1,8 @@
 package gube
 
 import (
+	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	restclient "k8s.io/client-go/rest"
 )
@@ -17,6 +19,7 @@ type Garden interface {
 	GetProfiles() (map[string]Profile, error)
 	GetProfile(name string) (Profile, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
+	KubeconfigProvider
 }
 
 type garden struct {
@@ -34,8 +37,27 @@ func NewGarden(config *restclient.Config) (Garden, error) {
 	return g, nil
 }
 
+func NewGardenFromConfigfile(configfile string) (Garden, error) {
+	access, err := newGardenAccessFromConfigfile(configfile)
+	if err != nil {
+		return nil, err
+	}
+	g := &garden{access, nil}
+	g.effective = g
+	return g, nil
+
+}
+
 func (this *garden) NewWrapper(g Garden) Garden {
 	return &garden{this.access, g}
+}
+
+func (this *garden) GetKubeconfig() ([]byte, error) {
+	cfg := this.access.GetKubeconfig()
+	if cfg == nil {
+		return nil, fmt.Errorf("no kubeconfig available for garden")
+	}
+	return cfg, nil
 }
 
 func (this *garden) GetShoots() (map[ShootName]Shoot, error) {

@@ -21,6 +21,8 @@ type profile struct {
 }
 
 func NewProfileFromProfileManifest(g Garden, m v1beta1.CloudProfile) Profile {
+	m.Kind = "CloudProfile"
+	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 	return &profile{garden: g, name: m.GetName(), manifest: m}
 }
 

@@ -2,6 +2,7 @@ package gube
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	gardenclientset "github.com/gardener/gardener/pkg/client/garden/clientset/versioned"
 	"github.com/gardener/gardener/pkg/operation/common"
@@ -12,8 +13,9 @@ import (
 )
 
 type garden_access struct {
-	gardenset *gardenclientset.Clientset
-	kubeset   *kubernetes.Clientset
+	gardenset  *gardenclientset.Clientset
+	kubeset    *kubernetes.Clientset
+	kubeconfig []byte
 }
 
 func newGardenAccess(config *restclient.Config) (*garden_access, error) {
@@ -26,6 +28,27 @@ func newGardenAccess(config *restclient.Config) (*garden_access, error) {
 		return nil, fmt.Errorf("failed to instantiate kubernetes client: %s", err)
 	}
 	return &garden_access{gardenset: gardenset, kubeset: kubeset}, nil
+}
+
+func newGardenAccessFromConfigfile(configfile string) (*garden_access, error) {
+	bytes, err := ioutil.ReadFile(configfile)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read kubeconfig '%s': %s", configfile, err)
+	}
+	config, err := NewConfigFromBytes(bytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create kubeconfig from '%s': %s", configfile, err)
+	}
+
+	g, err := newGardenAccess(config)
+	if err == nil {
+		g.kubeconfig = bytes
+	}
+	return g, err
+}
+
+func (this *garden_access) GetKubeconfig() []byte {
+	return this.kubeconfig
 }
 
 func (this *garden_access) GetShoots(eff Garden) (map[ShootName]Shoot, error) {

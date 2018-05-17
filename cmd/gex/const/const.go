@@ -7,6 +7,7 @@ const (
 	O_SEL_SHOOT   = "selected-shoot"
 	O_SEL_SEED    = "selected-seed"
 
+	O_ERROR   = "error"
 	O_PROJECT = "project"
 	O_SEED    = "seed"
 	O_INFRA   = "infra"

@@ -29,10 +29,13 @@ type get_output struct {
 	*util.TableOutput
 }
 
+var _ util.Output = &get_output{}
+
 func (this *get_output) Add(ctx *context.Context, e interface{}) error {
 	s := e.(gube.Shoot)
 	this.AddLine(
-		[]string{s.GetName().GetName(), s.GetName().GetProjectName(), s.GetInfrastructure(), s.GetSeedName(), s.GetState()},
+		[]string{s.GetName().GetName(), s.GetName().GetProjectName(),
+			s.GetInfrastructure(), s.GetSeedName(), s.GetState(), util.Oneline(s.GetError(), 90)},
 	)
 	return nil
 }
@@ -45,7 +48,7 @@ func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
 
 	o, err := util.GetOutput(opts, &get_output{
 		util.NewTableOutput([][]string{
-			[]string{"Shoot", "Project", "Infra", "Seed", "State"},
+			[]string{"SHOOT", "PROJECT", "INFRA", "SEED", "STATE", "ERROR"},
 		}),
 	})
 	if err != nil {

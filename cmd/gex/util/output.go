@@ -7,6 +7,7 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/pkg"
+	"github.com/gardener/gardener/pkg/client/garden/clientset/versioned/scheme"
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -14,7 +15,7 @@ import (
 
 type Output interface {
 	Add(ctx *context.Context, e interface{}) error
-	Out(*context.Context)
+	Out(*context.Context) error
 }
 
 type ManifestOutput struct {
@@ -53,8 +54,10 @@ func (this *ManifestOutput) Add(ctx *context.Context, e interface{}) error {
 	return nil
 }
 
-func (this *YAMLOutput) Out(ctx *context.Context) {
-	ser := json.NewYAMLSerializer(json.DefaultMetaFactory, nil, nil)
+var typer = runtime.MultiObjectTyper{scheme.Scheme}
+
+func (this *YAMLOutput) Out(ctx *context.Context) error {
+	ser := json.NewYAMLSerializer(json.DefaultMetaFactory, nil, typer)
 	for _, m := range this.data {
 		fmt.Println("---")
 		err := ser.Encode(m, os.Stdout)
@@ -62,10 +65,11 @@ func (this *YAMLOutput) Out(ctx *context.Context) {
 
 		}
 	}
+	return nil
 }
 
-func (this *JSONOutput) Out(*context.Context) {
-	ser := json.NewSerializer(json.DefaultMetaFactory, nil, nil, this.pretty)
+func (this *JSONOutput) Out(*context.Context) error {
+	ser := json.NewSerializer(json.DefaultMetaFactory, nil, typer, this.pretty)
 	for _, m := range this.data {
 		err := ser.Encode(m, os.Stdout)
 		if err != nil {
@@ -75,4 +79,5 @@ func (this *JSONOutput) Out(*context.Context) {
 			fmt.Println()
 		}
 	}
+	return nil
 }

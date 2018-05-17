@@ -72,6 +72,24 @@ func (this *BasicHandler) Out(ctx *context.Context) {
 /////////////////////////////////////////////////////////////////////////////
 // Standard Command Logic
 
+func DoitRaw(name_option string, opts *cmdint.Options, h Handler) error {
+	ctx := context.Get(opts)
+	name := ""
+	if v := opts.GetOptionValue(name_option); v != nil {
+		name = *v
+	}
+	if name == "" {
+		if def := h.GetDefault(opts); def != nil {
+			name = *def
+		}
+	}
+	if name == "" {
+		return fmt.Errorf("no element selected")
+	}
+	opts.Arguments = []string{name}
+	return doDedicated(ctx, opts, h)
+}
+
 func Doit(opts *cmdint.Options, h Handler) error {
 	ctx := context.Get(opts)
 

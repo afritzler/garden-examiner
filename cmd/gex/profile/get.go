@@ -30,6 +30,8 @@ type get_output struct {
 	*util.TableOutput
 }
 
+var _ util.Output = &get_output{}
+
 func (this *get_output) Add(ctx *context.Context, e interface{}) error {
 	p := e.(gube.Profile)
 
@@ -47,7 +49,7 @@ func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
 
 	o, err := util.GetOutput(opts, &get_output{
 		util.NewTableOutput([][]string{
-			[]string{"Profile", "Infra"},
+			[]string{"PROFILE", "INFRA"},
 		}),
 	})
 	if err != nil {

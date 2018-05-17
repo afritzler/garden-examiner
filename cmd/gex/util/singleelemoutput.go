@@ -10,6 +10,8 @@ type SingleElementOutput struct {
 	Elem interface{}
 }
 
+var _ Output = &SingleElementOutput{}
+
 func NewSingleElementOutput() *SingleElementOutput {
 	return &SingleElementOutput{}
 }
@@ -22,5 +24,6 @@ func (this *SingleElementOutput) Add(ctx *context.Context, e interface{}) error 
 	return fmt.Errorf("only one element can be selected, but multiple elements selected/found")
 }
 
-func (this *SingleElementOutput) Out(ctx *context.Context) {
+func (this *SingleElementOutput) Out(ctx *context.Context) error {
+	return nil
 }

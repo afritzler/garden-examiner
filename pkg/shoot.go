@@ -13,6 +13,7 @@ import (
 
 type Shoot interface {
 	GetName() *ShootName
+	GetNamespaceInSeed() (string, error)
 	GetManifest() *v1beta1.Shoot
 	GetSeedName() string
 	GetSeed() (Seed, error)
@@ -22,22 +23,26 @@ type Shoot interface {
 	GetInfrastructure() string
 	GetNodeCount() (int, error)
 	GetState() string
+	GetProgress() int
 	GetError() string
 	KubeconfigProvider
 	RuntimeObjectWrapper
 }
 
 type shoot struct {
-	garden    Garden
-	name      *ShootName
-	namespace string
-	manifest  v1beta1.Shoot
-	clientset *kubernetes.Clientset
+	garden        Garden
+	name          *ShootName
+	namespace     string
+	seednamespace string
+	manifest      v1beta1.Shoot
+	clientset     *kubernetes.Clientset
 }
 
 var _ Shoot = &shoot{}
 
 func NewShootFromShootManifest(g Garden, m v1beta1.Shoot) (Shoot, error) {
+	m.Kind = "Shoot"
+	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 	n, err := NewShootNameFromShootManifest(g, m)
 	if err != nil {
 		return nil, err
@@ -47,6 +52,17 @@ func NewShootFromShootManifest(g Garden, m v1beta1.Shoot) (Shoot, error) {
 
 func (s *shoot) GetName() *ShootName {
 	return s.name
+}
+
+func (s *shoot) GetNamespaceInSeed() (string, error) {
+	if s.seednamespace == "" {
+		p, err := s.GetProject()
+		if err != nil {
+			return "", fmt.Errorf("cannot get namespace for shoot '%s': %s", s.name, err)
+		}
+		s.seednamespace = fmt.Sprintf("shoot-%s-%s", p.GetName(), s.GetName().GetName())
+	}
+	return s.seednamespace, nil
 }
 
 func (s *shoot) GetNamespace() (string, error) {
@@ -83,6 +99,10 @@ func (s *shoot) GetProject() (Project, error) {
 
 func (s *shoot) GetState() string {
 	return string(s.manifest.Status.LastOperation.State)
+}
+
+func (s *shoot) GetProgress() int {
+	return s.manifest.Status.LastOperation.Progress
 }
 
 func (s *shoot) GetError() string {

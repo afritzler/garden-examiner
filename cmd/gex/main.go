@@ -6,7 +6,7 @@ import (
 	_ "github.com/afritzler/garden-examiner/cmd/gex/profile"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/project"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/seed"
-	_ "github.com/afritzler/garden-examiner/cmd/gex/select"
+	// _ "github.com/afritzler/garden-examiner/cmd/gex/select"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/shoot"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/verb"
 
@@ -14,7 +14,7 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/pkg"
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
-	"k8s.io/client-go/tools/clientcmd"
+	_ "k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
@@ -33,12 +33,13 @@ func setup(opts *cmdint.Options) error {
 		return fmt.Errorf("no kubeconfig specified")
 	}
 	fmt.Printf("kubeconfig is %s\n", *configfile)
-	config, err := clientcmd.BuildConfigFromFlags("", *configfile)
-	if err != nil {
-		return err
-	}
+	//config, err := clientcmd.BuildConfigFromFlags("", *configfile)
+	//if err != nil {
+	//	return err
+	//}
 
-	g, err := gube.NewGarden(config)
+	//g, err := gube.NewGarden(config)
+	g, err := gube.NewGardenFromConfigfile(*configfile)
 	if err != nil {
 		return err
 	}

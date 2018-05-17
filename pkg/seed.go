@@ -30,6 +30,8 @@ type seed struct {
 }
 
 func NewSeedFromSeedManifest(g Garden, m v1beta1.Seed) Seed {
+	m.Kind = "Seed"
+	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 	return &seed{garden: g, name: m.GetName(), manifest: m}
 }
 

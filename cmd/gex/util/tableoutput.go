@@ -10,8 +10,16 @@ type TableOutput struct {
 	data [][]string
 }
 
-func (this *TableOutput) Out(*context.Context) {
+var _ Output = &TableOutput{}
+
+func (this *TableOutput) Add(ctx *context.Context, e interface{}) error {
+	panic(fmt.Errorf("called abstract Add method"))
+	return nil
+}
+
+func (this *TableOutput) Out(*context.Context) error {
 	FormatTable(this.data)
+	return nil
 }
 
 func (this *TableOutput) AddLine(line []string) *TableOutput {

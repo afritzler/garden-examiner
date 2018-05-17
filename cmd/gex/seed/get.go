@@ -1,6 +1,8 @@
 package seed
 
 import (
+	"fmt"
+
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
@@ -38,12 +40,22 @@ func (this *get_output) Add(ctx *context.Context, e interface{}) error {
 		i = p.GetInfrastructure()
 	}
 	shoot := ""
+	state := ""
+	msg := ""
 	sn := s.GetShoot()
 	if sn != nil {
 		shoot = sn.GetName()
+		sh, err := ctx.GetShoot(sn)
+		if err != nil {
+			state = fmt.Sprintf("%s", err)
+		} else {
+			state = sh.GetState()
+			msg = sh.GetError()
+
+		}
 	}
 	this.AddLine(
-		[]string{s.GetName(), i, c.Region, c.Profile, shoot},
+		[]string{s.GetName(), i, c.Region, c.Profile, shoot, state, util.Oneline(msg, 90)},
 	)
 	return nil
 }
@@ -56,7 +68,7 @@ func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
 
 	o, err := util.GetOutput(opts, &get_output{
 		util.NewTableOutput([][]string{
-			[]string{"Seed", "Infra", "Region", "Profile", "Shoot"},
+			[]string{"SEED", "INFRA", "REGION", "PROFILE", "SHOOT", "STATE", "ERROR"},
 		}),
 	})
 	if err != nil {
