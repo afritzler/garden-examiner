@@ -2,12 +2,12 @@ package verb
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
+	"github.com/afritzler/garden-examiner/cmd/gex/env"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 
 	"github.com/afritzler/garden-examiner/pkg"
@@ -123,25 +123,18 @@ func (this *select_output) Out(ctx *context.Context) error {
 }
 
 func (this *select_output) Write(shoot, project, seed *string) {
-	f := os.NewFile(3, "env-setting")
-	if f == nil {
-		fmt.Printf("Please use the gex alias to make the selection effective.\n")
-	}
-	envout(f, shoot, "SHOOT")
-	envout(f, project, "PROJECT")
-	envout(f, seed, "SEED")
+	env.Warning()
+	envout(shoot, "SHOOT")
+	envout(project, "PROJECT")
+	envout(seed, "SEED")
 }
 
-func envout(f *os.File, value *string, key string) {
-	line := ""
+func envout(value *string, key string) {
 	if value == nil || *value == "" {
-		line = fmt.Sprintf("unset GEX_%s", key)
+		env.UnSet(fmt.Sprintf("GEX_%s", key))
+		fmt.Printf("%-*s cleared\n", 10, key)
 	} else {
-		line = fmt.Sprintf("export GEX_%s=\"%v\"", key, *value)
+		env.Set(fmt.Sprintf("GEX_%s", key), *value)
+		fmt.Printf("%-*s = \"%v\"\n", 10, key, *value)
 	}
-	if f != nil {
-		fmt.Fprintf(f, "%s\n", line)
-	}
-	fmt.Println(line)
-
 }
