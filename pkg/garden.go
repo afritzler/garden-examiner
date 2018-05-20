@@ -5,6 +5,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	restclient "k8s.io/client-go/rest"
+
+	_ "github.com/afritzler/garden-examiner/pkg/data"
 )
 
 type Garden interface {

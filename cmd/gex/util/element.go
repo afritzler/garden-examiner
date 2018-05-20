@@ -7,6 +7,7 @@ import (
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	_ "github.com/afritzler/garden-examiner/pkg"
+	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
 type Handler interface {
@@ -14,7 +15,7 @@ type Handler interface {
 	RequireScan(string) bool
 	MatchName(interface{}, string) (bool, error)
 	Get(*context.Context, string) (interface{}, error)
-	Iterator(ctx *context.Context, opts *cmdint.Options) (Iterator, error)
+	Iterator(ctx *context.Context, opts *cmdint.Options) (data.Iterator, error)
 	Match(*context.Context, interface{}, *cmdint.Options) (bool, error)
 	Add(*context.Context, interface{}) error
 	Out(*context.Context)
@@ -30,7 +31,7 @@ type HandlerAdapter interface {
 
 type BasicHandler struct {
 	output Output
-	elems  IndexedAccess
+	elems  data.IndexedAccess
 	impl   HandlerAdapter
 }
 
@@ -46,15 +47,15 @@ func (this *BasicHandler) GetDefault(opts *cmdint.Options) *string {
 	return nil
 }
 
-func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (Iterator, error) {
+func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (data.Iterator, error) {
 	if this.elems == nil {
 		elems, err := this.impl.GetAll(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
-		this.elems = NewIndexedSliceAccess(elems)
+		this.elems = data.NewIndexedSliceAccess(elems)
 	}
-	return NewIndexedIterator(this.elems), nil
+	return data.NewIndexedIterator(this.elems), nil
 }
 
 func (this *BasicHandler) Match(ctx *context.Context, e interface{}, opts *cmdint.Options) (bool, error) {
@@ -157,7 +158,10 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 				} else {
 					//fmt.Printf("LOOKUP %s\n", n)
 					found := false
-					i.Reset()
+					i, err = h.Iterator(ctx, opts)
+					if err != nil {
+						return err
+					}
 					for i.HasNext() {
 						e := i.Next()
 						ok, err := h.Match(ctx, e, opts)

@@ -1,4 +1,4 @@
-package util
+package data
 
 type Map interface {
 	Has(interface{}) bool
@@ -61,7 +61,7 @@ type _MapIterator struct {
 	Iterator
 }
 
-func newMapKeyIterator(m _Map) Iterator {
+func newMapKeyIterator(m _Map) ResettableIterator {
 	keys := make([]interface{}, m.Size())
 	i := 0
 	for k, _ := range m {
@@ -76,10 +76,6 @@ func (this *_MapIterator) Reset() {
 }
 
 type _EntryIterator _MapIterator
-
-func (this *_EntryIterator) Reset() {
-	this.Iterator.Reset()
-}
 
 func (this *_EntryIterator) Next() interface{} {
 	if this.HasNext() {
