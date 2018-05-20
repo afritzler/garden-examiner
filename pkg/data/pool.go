@@ -10,6 +10,25 @@ type ProcessorPool interface {
 	Exec(func())
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+type _UnlimitedPool struct {
+}
+
+func NewUnlimitedProcessorPool() ProcessorPool {
+	return &_UnlimitedPool{}
+}
+
+func (this *_UnlimitedPool) Request() {
+}
+func (this *_UnlimitedPool) Release() {
+}
+func (this *_UnlimitedPool) Exec(f func()) {
+	go f()
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 type _ProcessorPool struct {
 	n    int
 	uses int

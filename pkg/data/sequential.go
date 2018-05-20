@@ -30,9 +30,11 @@ func (this *_SequentialProcessing) Filter(f FilterFunction) *_SequentialStep {
 func (this *_SequentialProcessing) Sort(c CompareFunction) *_SequentialProcessing {
 	return &_SequentialProcessing{this.AsSlice().Sort(c)}
 }
-
+func (this *_SequentialProcessing) WithPool(p ProcessorPool) *_ParallelProcessing {
+	return (&_ParallelProcessing{}).new(newEntryIterableFromIterable(this.data), p, NewOrderedContainer)
+}
 func (this *_SequentialProcessing) Parallel(n int) *_ParallelProcessing {
-	return (&_ParallelProcessing{}).new(newEntryIterableFromIterable(this.data), NewProcessorPool(n), NewOrderedContainer)
+	return this.WithPool(NewProcessorPool(n))
 }
 
 func (this *_SequentialProcessing) Iterator() Iterator {

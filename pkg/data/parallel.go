@@ -32,8 +32,11 @@ func (this *_ParallelProcessing) Sort(c CompareFunction) *_ParallelProcessing {
 	return (&_ParallelProcessing{}).new(this.AsSlice().Sort(c), this.pool, NewOrderedContainer)
 }
 
+func (this *_ParallelProcessing) WithPool(p ProcessorPool) *_ParallelProcessing {
+	return (&_ParallelProcessing{}).new(this.data, p, this.creator)
+}
 func (this *_ParallelProcessing) Parallel(n int) *_ParallelProcessing {
-	return (&_ParallelProcessing{}).new(this.data, NewProcessorPool(n), this.creator)
+	return this.WithPool(NewProcessorPool(n))
 }
 func (this *_ParallelProcessing) Sequential() *_SequentialProcessing {
 	return (&_SequentialProcessing{}).new(this.data)
