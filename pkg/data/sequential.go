@@ -1,47 +1,37 @@
 package data
 
+type IncrementalProcessingSource interface {
+	Iterable
+	Open()
+	Add(e ...interface{}) IncrementalProcessingSource
+	Close()
+}
+
+type ProcessingSource interface {
+	IncrementalProcessingSource
+	IndexedAccess
+}
+
 type FilterFunction func(interface{}) bool
 type MappingFunction func(interface{}) interface{}
 type CompareFunction func(interface{}, interface{}) int
 
-func Process(data Iterable) *_SequentialProcessing {
+type ProcessingResult interface {
+	Iterable
+
+	Map(m MappingFunction) ProcessingResult
+	Filter(f FilterFunction) ProcessingResult
+	Sort(c CompareFunction) ProcessingResult
+
+	Unordered() ProcessingResult
+	Sequential() ProcessingResult
+	Parallel(n int) ProcessingResult
+
+	AsSlice() IndexedSliceAccess
+}
+
+func Process(data Iterable) ProcessingResult {
 	return (&_SequentialProcessing{}).new(data)
-}
-
-/////////////////////////////////////////////////////////////////////////////
-
-type _SequentialProcessing struct {
-	data Iterable
-}
-
-var _ Iterable = &_SequentialProcessing{}
-
-func (this *_SequentialProcessing) new(data Iterable) *_SequentialProcessing {
-	this.data = data
-	return this
-}
-
-func (this *_SequentialProcessing) Map(m MappingFunction) *_SequentialStep {
-	return (&_SequentialStep{}).new(this.data, mapper(m))
-}
-func (this *_SequentialProcessing) Filter(f FilterFunction) *_SequentialStep {
-	return (&_SequentialStep{}).new(this.data, filter(f))
-}
-func (this *_SequentialProcessing) Sort(c CompareFunction) *_SequentialProcessing {
-	return &_SequentialProcessing{this.AsSlice().Sort(c)}
-}
-func (this *_SequentialProcessing) WithPool(p ProcessorPool) *_ParallelProcessing {
-	return (&_ParallelProcessing{}).new(newEntryIterableFromIterable(this.data), p, NewOrderedContainer)
-}
-func (this *_SequentialProcessing) Parallel(n int) *_ParallelProcessing {
-	return this.WithPool(NewProcessorPool(n))
-}
-
-func (this *_SequentialProcessing) Iterator() Iterator {
-	return this.data.Iterator()
-}
-func (this *_SequentialProcessing) AsSlice() IndexedSliceAccess {
-	return IndexedSliceAccess(Slice(this.data))
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -63,6 +53,48 @@ func (this filter) process(e interface{}) (interface{}, bool) {
 		return e, true
 	}
 	return nil, false
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+type _SequentialProcessing struct {
+	data Iterable
+}
+
+var _ Iterable = &_SequentialProcessing{}
+
+func (this *_SequentialProcessing) new(data Iterable) *_SequentialProcessing {
+	this.data = data
+	return this
+}
+
+func (this *_SequentialProcessing) Map(m MappingFunction) ProcessingResult {
+	return (&_SequentialStep{}).new(this.data, mapper(m))
+}
+func (this *_SequentialProcessing) Filter(f FilterFunction) ProcessingResult {
+	return (&_SequentialStep{}).new(this.data, filter(f))
+}
+func (this *_SequentialProcessing) Sort(c CompareFunction) ProcessingResult {
+	return &_SequentialProcessing{this.AsSlice().Sort(c)}
+}
+func (this *_SequentialProcessing) WithPool(p ProcessorPool) ProcessingResult {
+	return (&_ParallelProcessing{}).new(newEntryIterableFromIterable(this.data), p, NewOrderedContainer)
+}
+func (this *_SequentialProcessing) Parallel(n int) ProcessingResult {
+	return this.WithPool(NewProcessorPool(n))
+}
+func (this *_SequentialProcessing) Sequential() ProcessingResult {
+	return this
+}
+func (this *_SequentialProcessing) Unordered() ProcessingResult {
+	return this
+}
+
+func (this *_SequentialProcessing) Iterator() Iterator {
+	return this.data.Iterator()
+}
+func (this *_SequentialProcessing) AsSlice() IndexedSliceAccess {
+	return IndexedSliceAccess(Slice(this.data))
 }
 
 ////////////////////////////////////////////////////////////////////////////

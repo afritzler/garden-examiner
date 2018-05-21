@@ -26,6 +26,7 @@ type container interface {
 	add(e entry) container
 	len() int
 	get(int) entry
+	open()
 	close()
 	closed() bool
 
@@ -33,6 +34,7 @@ type container interface {
 }
 
 type _container_impl interface {
+	_open()
 	_close()
 	_add(e entry) bool
 }
@@ -59,6 +61,9 @@ func (this *_container) new() *_container {
 	return this
 }
 
+func (this *_container) _open() {
+	this.complete = false
+}
 func (this *_container) _close() {
 	this.complete = true
 }
@@ -81,6 +86,11 @@ func (this *_container) add(e entry) container {
 	return this
 }
 
+func (this *_container) open() {
+	this.Lock()
+	this.self._open()
+	this.Unlock()
+}
 func (this *_container) close() {
 	this.Lock()
 	this.self._close()
@@ -253,4 +263,55 @@ func newEntryIterableFromIterable(data Iterable) entry_iterable {
 		c.close()
 	}()
 	return c
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+type _ProcessingSource struct {
+	_container
+}
+
+var _ ProcessingSource = &_ProcessingSource{}
+var _ IncrementalProcessingSource = &_ProcessingSource{}
+var _ IndexedAccess = &_ProcessingSource{}
+
+func NewIncrementalProcessingSource() ProcessingSource {
+	return (&_ProcessingSource{}).new()
+}
+
+func (this *_ProcessingSource) new() ProcessingSource {
+	this._container.new()
+	return this
+}
+
+func (this *_ProcessingSource) Add(entries ...interface{}) IncrementalProcessingSource {
+	for _, e := range entries {
+		this.add(entry{this.len(), true, e})
+	}
+	return this
+}
+
+func (this *_ProcessingSource) Open()    { this.open() }
+func (this *_ProcessingSource) Close()   { this.close() }
+func (this *_ProcessingSource) Len() int { return this.len() }
+
+func (this *_ProcessingSource) Get(i int) interface{} {
+	e := this.get(i)
+	return e.entry
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+func NewAsyncProcessingSource(f func() Iterable, pool ProcessorPool) ProcessingSource {
+	p := (&_ProcessingSource{}).new()
+	pool.Request()
+	pool.Exec(func() {
+		i := f().Iterator()
+		for i.HasNext() {
+			p.Add(i.Next())
+		}
+		p.Close()
+		pool.Release()
+	})
+	return p
 }

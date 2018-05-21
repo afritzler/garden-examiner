@@ -1,7 +1,7 @@
 package data
 
 type IndexedAccess interface {
-	Size() int
+	Len() int
 	Get(int) interface{}
 }
 
@@ -23,7 +23,7 @@ func (this *IndexedIterator) new(a IndexedAccess) *IndexedIterator {
 }
 
 func (this *IndexedIterator) HasNext() bool {
-	return this.access.Size() > this.current+1
+	return this.access.Len() > this.current+1
 }
 
 func (this *IndexedIterator) Next() interface{} {
@@ -49,7 +49,7 @@ func NewIndexedSliceAccess(slice []interface{}) IndexedSliceAccess {
 	return IndexedSliceAccess(slice)
 }
 
-func (this IndexedSliceAccess) Size() int {
+func (this IndexedSliceAccess) Len() int {
 	return len(this)
 }
 

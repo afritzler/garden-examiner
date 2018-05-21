@@ -53,6 +53,14 @@ func main() {
 		fmt.Printf("chained: ordered %v\n", base.Filter(odd).Map(times2).AsSlice())
 		fmt.Printf("chained: unordered %v\n", filtered.Map(times2).AsSlice())
 		fmt.Printf("chained: sorted %v\n", filtered.Map(times2).Sort(decreasing).AsSlice())
+
+		src := data.NewIncrementalProcessingSource()
+		p := data.Process(src).Parallel(2).Filter(even).Map(NewMapping(2)).Sort(decreasing)
+		go func() {
+			src.Add(1, 2, 3, 20)
+			src.Close()
+		}()
+		fmt.Printf("incremental: sorted %v\n", p.AsSlice())
 	}
 
 }

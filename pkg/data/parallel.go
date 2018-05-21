@@ -22,26 +22,28 @@ func (this *_ParallelProcessing) new(data entry_iterable, pool ProcessorPool, cr
 	return this
 }
 
-func (this *_ParallelProcessing) Map(m MappingFunction) *_ParallelStep {
+func (this *_ParallelProcessing) Map(m MappingFunction) ProcessingResult {
 	return (&_ParallelStep{}).new(this.pool, this.data, mapper(m), this.creator)
 }
-func (this *_ParallelProcessing) Filter(f FilterFunction) *_ParallelStep {
+func (this *_ParallelProcessing) Filter(f FilterFunction) ProcessingResult {
 	return (&_ParallelStep{}).new(this.pool, this.data, filter(f), this.creator)
 }
-func (this *_ParallelProcessing) Sort(c CompareFunction) *_ParallelProcessing {
-	return (&_ParallelProcessing{}).new(this.AsSlice().Sort(c), this.pool, NewOrderedContainer)
+func (this *_ParallelProcessing) Sort(c CompareFunction) ProcessingResult {
+	setup := func() Iterable { return this.AsSlice().Sort(c) }
+	fmt.Printf("POOL %+v\n", this.pool)
+	return (&_ParallelProcessing{}).new(NewAsyncProcessingSource(setup, this.pool).(entry_iterable), this.pool, NewOrderedContainer)
 }
 
-func (this *_ParallelProcessing) WithPool(p ProcessorPool) *_ParallelProcessing {
+func (this *_ParallelProcessing) WithPool(p ProcessorPool) ProcessingResult {
 	return (&_ParallelProcessing{}).new(this.data, p, this.creator)
 }
-func (this *_ParallelProcessing) Parallel(n int) *_ParallelProcessing {
+func (this *_ParallelProcessing) Parallel(n int) ProcessingResult {
 	return this.WithPool(NewProcessorPool(n))
 }
-func (this *_ParallelProcessing) Sequential() *_SequentialProcessing {
+func (this *_ParallelProcessing) Sequential() ProcessingResult {
 	return (&_SequentialProcessing{}).new(this.data)
 }
-func (this *_ParallelProcessing) Unordered() *_ParallelProcessing {
+func (this *_ParallelProcessing) Unordered() ProcessingResult {
 	data := this.data
 	ordered, ok := data.(*ordered_container)
 	if ok {
