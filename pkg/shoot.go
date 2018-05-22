@@ -3,6 +3,7 @@ package gube
 import (
 	"fmt"
 
+	. "github.com/afritzler/garden-examiner/pkg/data"
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -184,6 +185,38 @@ func (s *shoot) GetNodeCount() (int, error) {
 //////////////////////////////////////////////////////////////////////////////
 // cache
 
+type ShootCacher struct {
+	garden Garden
+}
+
+func NewShootCacher(g Garden) Cacher {
+	return &ShootCacher{g}
+}
+
+func (this *ShootCacher) GetAll() (Iterator, error) {
+	fmt.Printf("cacher get all shoots\n")
+	elems, err := this.garden.GetShoots()
+	if err != nil {
+		fmt.Printf("cacher got error %s\n", err)
+		return nil, err
+	}
+	fmt.Printf("cacher got %d shoots\n", len(elems))
+	a := []interface{}{}
+	for _, v := range elems {
+		a = append(a, v)
+	}
+	return NewSliceIterator(a), nil
+}
+
+func (this *ShootCacher) Get(key interface{}) (interface{}, error) {
+	name := key.(ShootName)
+	return this.garden.GetShoot(&name)
+}
+
+func (this *ShootCacher) Key(elem interface{}) interface{} {
+	return elem.(Shoot).GetName()
+}
+
 type ShootCache interface {
 	GetShoots() (map[ShootName]Shoot, error)
 	GetShoot(name *ShootName) (Shoot, error)
@@ -191,50 +224,34 @@ type ShootCache interface {
 }
 
 type shoot_cache struct {
-	garden   Garden
-	shoots   map[ShootName]Shoot
-	complete bool
+	cache Cache
 }
 
 func NewShootCache(g Garden) ShootCache {
-	return &shoot_cache{g, nil, false}
+	return &shoot_cache{NewCache(NewShootCacher(g))}
 }
 
 func (this *shoot_cache) Reset() {
-	this.shoots = nil
-	this.complete = false
+	this.cache.Reset()
 }
 
 func (this *shoot_cache) GetShoots() (map[ShootName]Shoot, error) {
-	if this.shoots == nil || !this.complete {
-		elems, err := this.garden.GetShoots()
-		if err != nil {
-			return nil, err
-		}
-		this.shoots = elems
-		this.complete = true
+	m := map[ShootName]Shoot{}
+	i, err := this.cache.GetAll()
+	if err != nil {
+		return nil, err
 	}
-	return this.shoots, nil
+	for i.HasNext() {
+		e := i.Next().(Shoot)
+		m[*e.GetName()] = e
+	}
+	return m, nil
 }
 
 func (this *shoot_cache) GetShoot(name *ShootName) (Shoot, error) {
-	var p Shoot = nil
-	if this.shoots != nil {
-		p = this.shoots[*name]
+	e, err := this.cache.Get(*name)
+	if err != nil {
+		return nil, err
 	}
-	if p == nil && !this.complete {
-		elem, err := this.garden.GetShoot(name)
-		if err != nil {
-			return nil, err
-		}
-		if this.shoots == nil {
-			this.shoots = map[ShootName]Shoot{}
-		}
-		this.shoots[*name] = elem
-		p = elem
-	}
-	if p == nil {
-		return nil, fmt.Errorf("shoot '%s' not found", name)
-	}
-	return p, nil
+	return e.(Shoot), nil
 }

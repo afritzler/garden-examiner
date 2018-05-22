@@ -1,7 +1,7 @@
 package gube
 
 import (
-	"fmt"
+	. "github.com/afritzler/garden-examiner/pkg/data"
 
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -60,6 +60,35 @@ func (s *profile) GetInfrastructure() string {
 //////////////////////////////////////////////////////////////////////////////
 // cache
 
+type ProfileCacher struct {
+	garden Garden
+}
+
+func NewProfileCacher(g Garden) Cacher {
+	return &ProfileCacher{g}
+}
+
+func (this *ProfileCacher) GetAll() (Iterator, error) {
+	elems, err := this.garden.GetProfiles()
+	if err != nil {
+		return nil, err
+	}
+	a := []interface{}{}
+	for _, v := range elems {
+		a = append(a, v)
+	}
+	return NewSliceIterator(a), nil
+}
+
+func (this *ProfileCacher) Get(key interface{}) (interface{}, error) {
+	name := key.(string)
+	return this.garden.GetProfile(name)
+}
+
+func (this *ProfileCacher) Key(elem interface{}) interface{} {
+	return elem.(Profile).GetName()
+}
+
 type ProfileCache interface {
 	GetProfiles() (map[string]Profile, error)
 	GetProfile(name string) (Profile, error)
@@ -67,50 +96,34 @@ type ProfileCache interface {
 }
 
 type profile_cache struct {
-	garden   Garden
-	profiles map[string]Profile
-	complete bool
+	cache Cache
 }
 
 func NewProfileCache(g Garden) ProfileCache {
-	return &profile_cache{g, nil, false}
+	return &profile_cache{NewCache(NewProfileCacher(g))}
 }
 
 func (this *profile_cache) Reset() {
-	this.profiles = nil
-	this.complete = false
+	this.cache.Reset()
 }
 
 func (this *profile_cache) GetProfiles() (map[string]Profile, error) {
-	if this.profiles == nil || !this.complete {
-		elems, err := this.garden.GetProfiles()
-		if err != nil {
-			return nil, err
-		}
-		this.profiles = elems
-		this.complete = true
+	m := map[string]Profile{}
+	i, err := this.cache.GetAll()
+	if err != nil {
+		return nil, err
 	}
-	return this.profiles, nil
+	for i.HasNext() {
+		e := i.Next().(Profile)
+		m[e.GetName()] = e
+	}
+	return m, nil
 }
 
 func (this *profile_cache) GetProfile(name string) (Profile, error) {
-	var p Profile = nil
-	if this.profiles != nil {
-		p = this.profiles[name]
+	e, err := this.cache.Get(name)
+	if err != nil {
+		return nil, err
 	}
-	if p == nil && !this.complete {
-		elem, err := this.garden.GetProfile(name)
-		if err != nil {
-			return nil, err
-		}
-		if this.profiles == nil {
-			this.profiles = map[string]Profile{}
-		}
-		this.profiles[name] = elem
-		p = elem
-	}
-	if p == nil {
-		return nil, fmt.Errorf("profile '%s' not found", name)
-	}
-	return p, nil
+	return e.(Profile), nil
 }
