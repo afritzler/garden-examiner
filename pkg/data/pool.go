@@ -50,6 +50,11 @@ func (this *_ProcessorPool) Request() {
 }
 
 func (this *_ProcessorPool) Exec(f func()) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
+	if this.uses == 0 {
+		panic("unrequested processor pool used")
+	}
 	this.set.exec(f)
 }
 

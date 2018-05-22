@@ -51,6 +51,9 @@ func (this *_ParallelProcessing) Unordered() ProcessingResult {
 	}
 	return (&_ParallelProcessing{}).new(data, this.pool, NewContainer)
 }
+func (this *_ParallelProcessing) Apply(p ProcessChain) ProcessingResult {
+	return p.Process(this)
+}
 
 func (this *_ParallelProcessing) Iterator() Iterator {
 	return this.data.Iterator()
@@ -88,7 +91,7 @@ func (this *_ParallelStep) new(pool ProcessorPool, data entry_iterable, op opera
 				if log {
 					fmt.Printf("process %d\n", e.index)
 				}
-				e.entry, e.ok = op.process(e.entry)
+				e.value, e.ok = op.process(e.value)
 				this.container.add(e)
 				if log {
 					fmt.Printf("done %d\n", e.index)

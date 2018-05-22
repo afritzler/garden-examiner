@@ -153,7 +153,7 @@ func (this *_entry_iterator) Next() interface{} {
 	if !ok {
 		return nil
 	}
-	return n.entry
+	return n.value
 }
 
 func (this *_entry_iterator) next() entry {
@@ -247,6 +247,14 @@ func (this *ordered_container) Iterator() Iterator {
 
 ////////////////////////////////////////////////////////////////////////////
 
+type entry struct {
+	index int
+	ok    bool
+	value interface{}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 func newEntryIterableFromIterable(data Iterable) entry_iterable {
 	e, ok := data.(entry_iterable)
 	if ok {
@@ -297,7 +305,7 @@ func (this *_ProcessingSource) Len() int { return this.len() }
 
 func (this *_ProcessingSource) Get(i int) interface{} {
 	e := this.get(i)
-	return e.entry
+	return e.value
 }
 
 /////////////////////////////////////////////////////////////////////////////

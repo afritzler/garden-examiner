@@ -22,7 +22,9 @@ type ProcessingResult interface {
 	Map(m MappingFunction) ProcessingResult
 	Filter(f FilterFunction) ProcessingResult
 	Sort(c CompareFunction) ProcessingResult
+	Apply(c ProcessChain) ProcessingResult
 
+	WithPool(ProcessorPool) ProcessingResult
 	Unordered() ProcessingResult
 	Sequential() ProcessingResult
 	Parallel(n int) ProcessingResult
@@ -88,6 +90,9 @@ func (this *_SequentialProcessing) Sequential() ProcessingResult {
 }
 func (this *_SequentialProcessing) Unordered() ProcessingResult {
 	return this
+}
+func (this *_SequentialProcessing) Apply(c ProcessChain) ProcessingResult {
+	return c.Process(this)
 }
 
 func (this *_SequentialProcessing) Iterator() Iterator {
