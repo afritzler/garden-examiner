@@ -36,28 +36,24 @@ var filters *util.Filters = util.NewFilters()
 /////////////////////////////////////////////////////////////////////////////
 
 type Handler struct {
-	*util.BasicHandler
+	*util.BasicSelfHandler
 	data map[gube.ShootName]gube.Shoot
 }
 
 func NewHandler(o util.Output) *Handler {
 	h := &Handler{}
-	h.BasicHandler = util.NewBasicHandler(o, h)
+	h.BasicSelfHandler = util.NewBasicSelfHandler(o, h)
 	return h
 }
 
-func NewOptsHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
+func NewModeHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
 	h := &Handler{}
-	b, err := util.NewBasicOptsHandler(opts, o, h)
+	b, err := util.NewBasicModeSelfHandler(opts, o, h)
 	if err != nil {
 		return nil, err
 	}
-	h.BasicHandler = b
-	return h, nil
-}
-
-func (this *Handler) Doit(opts *cmdint.Options) error {
-	return util.Doit(opts, this)
+	h.BasicSelfHandler = b
+	return h, err
 }
 
 func (this *Handler) GetDefault(opts *cmdint.Options) *string {

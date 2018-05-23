@@ -37,15 +37,22 @@ type BasicHandler struct {
 }
 
 func NewBasicHandler(o Output, impl HandlerAdapter) *BasicHandler {
-	return &BasicHandler{o, nil, impl}
+	return (&BasicHandler{}).new(o, impl)
 }
 
-func NewBasicOptsHandler(opts *cmdint.Options, outs Outputs, impl HandlerAdapter) (*BasicHandler, error) {
+func (this *BasicHandler) new(o Output, impl HandlerAdapter) *BasicHandler {
+	this.output = o
+	this.elems = nil
+	this.impl = impl
+	return this
+}
+
+func NewBasicModeHandler(opts *cmdint.Options, outs Outputs, impl HandlerAdapter) (*BasicHandler, error) {
 	o, err := outs.Create(opts)
 	if err != nil {
 		return nil, err
 	}
-	return &BasicHandler{o, nil, impl}, nil
+	return (&BasicHandler{}).new(o, impl), nil
 }
 
 func (this *BasicHandler) RequireScan(name string) bool {
@@ -80,6 +87,41 @@ func (this *BasicHandler) Close(ctx *context.Context) error {
 }
 func (this *BasicHandler) Out(ctx *context.Context) {
 	this.output.Out(ctx)
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Self Handler
+
+type SelfHandler interface {
+	Handler
+	HandlerAdapter
+}
+
+type BasicSelfHandler struct {
+	self Handler
+	BasicHandler
+}
+
+func NewBasicSelfHandler(o Output, self SelfHandler) *BasicSelfHandler {
+	return (&BasicSelfHandler{}).new(o, self)
+}
+
+func (this *BasicSelfHandler) new(o Output, self SelfHandler) *BasicSelfHandler {
+	this.BasicHandler.new(o, self)
+	this.self = self
+	return this
+}
+
+func NewBasicModeSelfHandler(opts *cmdint.Options, outs Outputs, self SelfHandler) (*BasicSelfHandler, error) {
+	o, err := outs.Create(opts)
+	if err != nil {
+		return nil, err
+	}
+	return (&BasicSelfHandler{}).new(o, self), nil
+}
+
+func (this *BasicSelfHandler) Doit(opts *cmdint.Options) error {
+	return Doit(opts, this.self)
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -32,14 +32,24 @@ var filters *util.Filters = util.NewFilters()
 /////////////////////////////////////////////////////////////////////////////
 
 type Handler struct {
-	*util.BasicHandler
+	*util.BasicSelfHandler
 	data map[string]gube.Project
 }
 
 func NewHandler(o util.Output) *Handler {
 	h := &Handler{}
-	h.BasicHandler = util.NewBasicHandler(o, h)
+	h.BasicSelfHandler = util.NewBasicSelfHandler(o, h)
 	return h
+}
+
+func NewModeHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
+	h := &Handler{}
+	b, err := util.NewBasicModeSelfHandler(opts, o, h)
+	if err != nil {
+		return nil, err
+	}
+	h.BasicSelfHandler = b
+	return h, nil
 }
 
 func (this *Handler) GetDefault(opts *cmdint.Options) *string {

@@ -61,5 +61,5 @@ func map_get_wide_output(e interface{}) interface{} {
 }
 
 func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
-	return NewOptsHandler(opts, get_outputs)
+	return NewModeHandler(opts, get_outputs)
 }
