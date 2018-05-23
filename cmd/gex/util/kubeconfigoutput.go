@@ -4,37 +4,54 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mandelsoft/cmdint/pkg/cmdint"
+
 	"github.com/afritzler/garden-examiner/pkg"
+	"github.com/afritzler/garden-examiner/pkg/data"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 )
 
 type kubeconfig_output struct {
-	data []string
+	ElementOutput
 }
 
 var _Output = kubeconfig_output{}
 
-func NewKubeconfigOutput() Output {
-	return &kubeconfig_output{[]string{}}
+func KubeconfigOutputFactory(opts *cmdint.Options) Output {
+	return NewKubeconfigOutput()
 }
 
-func (this *kubeconfig_output) Add(ctx *context.Context, e interface{}) error {
+func NewKubeconfigOutput() Output {
+	return (&kubeconfig_output{}).new()
+}
+
+func (this *kubeconfig_output) new() Output {
+	this.ElementOutput.new(data.Chain().Parallel(20).Map(map_kubeconfig_output))
+	return this
+}
+
+func map_kubeconfig_output(e interface{}) interface{} {
 	s := e.(gube.KubeconfigProvider)
 	cfg, err := s.GetKubeconfig()
 	if err != nil {
 		return err
 	}
-	this.data = append(this.data, string(cfg))
-	return nil
+	return string(cfg)
 }
 
 func (this *kubeconfig_output) Out(ctx *context.Context) error {
-	for _, cfg := range this.data {
-		if !strings.HasPrefix(cfg, "---\n") {
-			fmt.Println("---")
+	i := this.Elems.Iterator()
+	for i.HasNext() {
+		switch cfg := i.Next().(type) {
+		case error:
+			return cfg
+		case string:
+			if !strings.HasPrefix(cfg, "---\n") {
+				fmt.Println("---")
+			}
+			fmt.Println(cfg)
 		}
-		fmt.Println(cfg)
 	}
 	return nil
 }

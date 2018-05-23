@@ -28,10 +28,11 @@ type Shoot interface {
 	GetError() string
 	KubeconfigProvider
 	RuntimeObjectWrapper
+	GardenObject
 }
 
 type shoot struct {
-	garden        Garden
+	_GardenObject
 	name          *ShootName
 	namespace     string
 	seednamespace string
@@ -42,13 +43,23 @@ type shoot struct {
 var _ Shoot = &shoot{}
 
 func NewShootFromShootManifest(g Garden, m v1beta1.Shoot) (Shoot, error) {
-	m.Kind = "Shoot"
-	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 	n, err := NewShootNameFromShootManifest(g, m)
 	if err != nil {
 		return nil, err
 	}
-	return &shoot{garden: g, name: n, manifest: m, namespace: m.GetObjectMeta().GetNamespace()}, nil
+	s := (&shoot{}).new(g, n, m)
+	return s, nil
+}
+
+func (s *shoot) new(g Garden, n *ShootName, m v1beta1.Shoot) Shoot {
+	m.Kind = "Shoot"
+	m.APIVersion = v1beta1.SchemeGroupVersion.String()
+
+	s._GardenObject.new(g)
+	s.name = n
+	s.manifest = m
+	s.namespace = m.GetObjectMeta().GetNamespace()
+	return s
 }
 
 func (s *shoot) GetName() *ShootName {

@@ -15,6 +15,7 @@ import (
 
 type Output interface {
 	Add(ctx *context.Context, e interface{}) error
+	Close(ctx *context.Context) error
 	Out(*context.Context) error
 }
 
@@ -31,26 +32,12 @@ type JSONOutput struct {
 	pretty bool
 }
 
-func GetOutput(opts *cmdint.Options, def Output) (Output, error) {
-	o := def
-	f := opts.GetOptionValue(constants.O_OUTPUT)
-	if f != nil {
-		switch *f {
-		case "yaml":
-			o = &YAMLOutput{ManifestOutput{data: []runtime.Object{}}}
-		case "json":
-			o = &JSONOutput{ManifestOutput{data: []runtime.Object{}}, true}
-		case "JSON":
-			o = &JSONOutput{ManifestOutput{data: []runtime.Object{}}, false}
-		default:
-			return nil, fmt.Errorf("invalid output format '%s'", *f)
-		}
-	}
-	return o, nil
-}
-
 func (this *ManifestOutput) Add(ctx *context.Context, e interface{}) error {
 	this.data = append(this.data, e.(gube.RuntimeObjectWrapper).GetRuntimeObject())
+	return nil
+}
+
+func (this *ManifestOutput) Close(ctx *context.Context) error {
 	return nil
 }
 
@@ -80,4 +67,81 @@ func (this *JSONOutput) Out(*context.Context) error {
 		}
 	}
 	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+type OutputFactory func(*cmdint.Options) Output
+
+type Outputs map[string]OutputFactory
+
+func NewOutputs(def OutputFactory, others ...Outputs) Outputs {
+	o := Outputs{"": def}
+	for _, other := range others {
+		for k, v := range other {
+			o[k] = v
+		}
+	}
+	return o
+}
+
+func (this Outputs) Select(name string) OutputFactory {
+	c, ok := this[name]
+	if !ok {
+		keys := []string{}
+		for k, _ := range this {
+			keys = append(keys, k)
+		}
+		k, _ := cmdint.SelectBest(name, keys...)
+		if k != "" {
+			c = this[k]
+		}
+	}
+	return c
+}
+
+func (this Outputs) Create(opts *cmdint.Options) (Output, error) {
+	f := opts.GetOptionValue(constants.O_OUTPUT)
+	if f == nil {
+		return this[""](opts), nil
+	}
+	c := this.Select(*f)
+	if c != nil {
+		o := c(opts)
+		if o != nil {
+			return o, nil
+		}
+	}
+	return nil, fmt.Errorf("invalid output format '%s'", *f)
+}
+
+func (this Outputs) AddManifestOutputs() Outputs {
+	this["yaml"] = func(opts *cmdint.Options) Output {
+		return &YAMLOutput{ManifestOutput{data: []runtime.Object{}}}
+	}
+	this["json"] = func(opts *cmdint.Options) Output {
+		return &JSONOutput{ManifestOutput{data: []runtime.Object{}}, true}
+	}
+	this["JSON"] = func(opts *cmdint.Options) Output {
+		return &JSONOutput{ManifestOutput{data: []runtime.Object{}}, false}
+	}
+	return this
+}
+
+func GetOutput(opts *cmdint.Options, def Output) (Output, error) {
+	o := def
+	f := opts.GetOptionValue(constants.O_OUTPUT)
+	if f != nil {
+		switch *f {
+		case "yaml":
+			o = &YAMLOutput{ManifestOutput{data: []runtime.Object{}}}
+		case "json":
+			o = &JSONOutput{ManifestOutput{data: []runtime.Object{}}, true}
+		case "JSON":
+			o = &JSONOutput{ManifestOutput{data: []runtime.Object{}}, false}
+		default:
+			return nil, fmt.Errorf("invalid output format '%s'", *f)
+		}
+	}
+	return o, nil
 }

@@ -21,18 +21,26 @@ type Seed interface {
 	GetInfrastructure() string
 	KubeconfigProvider
 	RuntimeObjectWrapper
+	GardenObject
 }
 
 type seed struct {
-	garden   Garden
+	_GardenObject
 	name     string
 	manifest v1beta1.Seed
 }
 
 func NewSeedFromSeedManifest(g Garden, m v1beta1.Seed) Seed {
+	return (&seed{}).new(g, m)
+}
+
+func (s *seed) new(g Garden, m v1beta1.Seed) Seed {
 	m.Kind = "Seed"
 	m.APIVersion = v1beta1.SchemeGroupVersion.String()
-	return &seed{garden: g, name: m.GetName(), manifest: m}
+	s._GardenObject.new(g)
+	s.name = m.GetName()
+	s.manifest = m
+	return s
 }
 
 func (s *seed) GetName() string {

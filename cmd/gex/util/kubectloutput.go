@@ -22,6 +22,10 @@ func NewKubectlOutput(args []string, mapper func(*context.Context, interface{}) 
 	return &kubectl_output{NewSingleElementOutput(), mapper, args}
 }
 
+func (this *kubectl_output) Close(ctx *context.Context) error {
+	return nil
+}
+
 func (this *kubectl_output) Add(ctx *context.Context, e interface{}) error {
 	if this.mapper != nil {
 		m, args, err := this.mapper(ctx, e)

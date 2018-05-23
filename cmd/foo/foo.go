@@ -14,7 +14,7 @@ func NewMapping(f int) data.MappingFunction {
 
 func main() {
 	slice := []interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	a := data.NewIndexedSliceAccess(slice)
+	a := data.IndexedSliceAccess(slice)
 	fmt.Printf("%v\n", slice)
 
 	even := func(e interface{}) bool {
@@ -48,16 +48,16 @@ func main() {
 	fmt.Printf("chained: sorted %v\n", filtered.Map(times2).Sort(decreasing).AsSlice())
 
 	src := data.NewIncrementalProcessingSource()
-	p := data.Process(src).Parallel(2).Filter(even).Map(times2).Sort(decreasing)
+	p := data.Process(src).Asynchronously().Filter(even).Map(times2).Sort(decreasing)
 	go func() {
 		src.Add(1, 2, 3, 20)
 		src.Close()
 	}()
 	fmt.Printf("incremental: sorted %v\n", p.AsSlice())
 
-	//c := data.Chain().Parallel(2).Filter(even).Map(times2)
-	//r = unordered.Apply(c).AsSlice()
-	//fmt.Printf("chain: unordered %v\n", r)
+	c := data.Chain().Parallel(2).Filter(even).Map(times2)
+	r = unordered.Apply(c).AsSlice()
+	fmt.Printf("chain: unordered %v\n", r)
 
-	Test()
+	//Test()
 }

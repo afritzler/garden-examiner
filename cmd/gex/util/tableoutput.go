@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
+	. "github.com/afritzler/garden-examiner/pkg/data"
 )
 
 type TableOutput struct {
@@ -14,6 +15,10 @@ var _ Output = &TableOutput{}
 
 func (this *TableOutput) Add(ctx *context.Context, e interface{}) error {
 	panic(fmt.Errorf("called abstract Add method"))
+	return nil
+}
+
+func (this *TableOutput) Close(ctx *context.Context) error {
 	return nil
 }
 
@@ -30,6 +35,33 @@ func (this *TableOutput) AddLine(line []string) *TableOutput {
 func NewTableOutput(data [][]string) *TableOutput {
 	return &TableOutput{data}
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+type TableProcessingOutput struct {
+	ElementOutput
+	header []string
+}
+
+var _ Output = &TableProcessingOutput{}
+
+func NewProcessingTableOutput(chain ProcessChain, header ...string) *TableProcessingOutput {
+	return (&TableProcessingOutput{}).new(chain, header)
+}
+
+func (this *TableProcessingOutput) new(chain ProcessChain, header []string) *TableProcessingOutput {
+	this.header = header
+	this.ElementOutput.new(chain)
+	return this
+}
+
+func (this *TableProcessingOutput) Out(*context.Context) error {
+	lines := [][]string{this.header}
+	FormatTable(append(lines, StringArraySlice(this.Elems)...))
+	return nil
+}
+
+///////////////////////////////////////////////////////////////////////////
 
 func FormatTable(data [][]string) {
 	columns := []int{}

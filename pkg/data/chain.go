@@ -1,9 +1,5 @@
 package data
 
-import (
-	"fmt"
-)
-
 type ProcessChain interface {
 	Map(m MappingFunction) ProcessChain
 	Filter(f FilterFunction) ProcessChain
@@ -11,7 +7,6 @@ type ProcessChain interface {
 	WithPool(p ProcessorPool) ProcessChain
 	Unordered() ProcessChain
 	Parallel(n int) ProcessChain
-	Sequential() ProcessChain
 
 	Process(data Iterable) ProcessingResult
 }
@@ -53,26 +48,18 @@ func (this *_ProcessChain) Unordered() ProcessChain {
 func (this *_ProcessChain) Parallel(n int) ProcessChain {
 	return (&_ProcessChain{}).new(this, chain_parallel(n))
 }
-func (this *_ProcessChain) Sequential() ProcessChain {
-	return (&_ProcessChain{}).new(this, chain_sequential)
-}
 
 func (this *_ProcessChain) Process(data Iterable) ProcessingResult {
-	fmt.Printf("THIS: %+v\n", this)
 	p, ok := data.(ProcessingResult)
 	if ok {
 		if this.parent == nil {
-			fmt.Printf("parent :NIL\n")
 			return p
 		}
-		fmt.Printf("recursion %+v\n", this.parent)
 		return this.operation(this.parent.Process(p))
 	}
 	if this.parent == nil {
-		fmt.Printf("parent :NIL\n")
 		return Process(data)
 	}
-	fmt.Printf("recursion\n")
 	return this.operation(this.parent.Process(data))
 }
 
@@ -91,5 +78,4 @@ func chain_with_pool(pool ProcessorPool) chain_operation {
 func chain_parallel(n int) chain_operation {
 	return func(p ProcessingResult) ProcessingResult { return p.Parallel(n) }
 }
-func chain_unordered(p ProcessingResult) ProcessingResult  { return p.Unordered() }
-func chain_sequential(p ProcessingResult) ProcessingResult { return p.Sequential() }
+func chain_unordered(p ProcessingResult) ProcessingResult { return p.Unordered() }

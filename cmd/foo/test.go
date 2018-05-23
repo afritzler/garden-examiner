@@ -8,6 +8,7 @@ type Node interface {
 	Map(s string) Node
 	Process(string) string
 }
+
 type _Node struct {
 	parent Node
 	data   string
@@ -20,12 +21,14 @@ func NewNode() Node {
 }
 
 func (this *_Node) new(p *_Node, s string) *_Node {
+
+	fmt.Printf("Parent: %+v\n", Node(p))
 	if p == nil {
 		this.parent = nil
 	} else {
 		this.parent = p
 	}
-	this.parent = p
+	//this.parent = p
 	this.data = s
 	return this
 }
@@ -40,7 +43,7 @@ func (this *_Node) Process(data string) string {
 		fmt.Printf("parent :NIL\n")
 		return data
 	}
-	fmt.Printf("recursion %+v\n", this.parent)
+	fmt.Printf("recursion %p\n", this.parent)
 	return this.parent.Process(data) + "->" + this.data
 }
 

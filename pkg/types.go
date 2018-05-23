@@ -10,6 +10,23 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+type GardenObject interface {
+	Garden() Garden
+}
+
+type _GardenObject struct {
+	garden Garden
+}
+
+func (this *_GardenObject) new(g Garden) GardenObject {
+	this.garden = g
+	return this
+}
+
+func (this *_GardenObject) Garden() Garden {
+	return this.garden
+}
+
 type RuntimeObjectWrapper interface {
 	GetRuntimeObject() runtime.Object
 }

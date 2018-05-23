@@ -45,10 +45,6 @@ type IndexedSliceAccess []interface{}
 var _ IndexedAccess = IndexedSliceAccess{}
 var _ Iterable = IndexedSliceAccess{}
 
-func NewIndexedSliceAccess(slice []interface{}) IndexedSliceAccess {
-	return IndexedSliceAccess(slice)
-}
-
 func (this IndexedSliceAccess) Len() int {
 	return len(this)
 }

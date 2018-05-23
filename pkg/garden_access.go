@@ -109,7 +109,7 @@ func (this *garden_access) GetProjects(eff Garden) (map[string]Project, error) {
 	}
 	result := map[string]Project{}
 	for _, n := range namespaces.Items {
-		project := NewProjectFromNamespaceManifest(&n)
+		project := NewProjectFromNamespaceManifest(eff, &n)
 		result[project.GetName()] = project
 	}
 	return result, nil
@@ -123,7 +123,7 @@ func (this *garden_access) GetProject(eff Garden, name string) (Project, error) 
 		return nil, fmt.Errorf("failed to get project %s: %s", name, err)
 	}
 	if len(namespaces.Items) > 0 {
-		return NewProjectFromNamespaceManifest(&namespaces.Items[0]), nil
+		return NewProjectFromNamespaceManifest(eff, &namespaces.Items[0]), nil
 	} else {
 		return nil, fmt.Errorf("failed to get project: got an empty project list for %s", name)
 	}
@@ -134,7 +134,7 @@ func (this *garden_access) GetProjectByNamespace(eff Garden, namespace string) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project namespace %s: %s", namespace, err)
 	}
-	return NewProjectFromNamespaceManifest(n), nil
+	return NewProjectFromNamespaceManifest(eff, n), nil
 }
 
 func (this *garden_access) GetProfiles(eff Garden) (map[string]Profile, error) {

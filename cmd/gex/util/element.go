@@ -18,6 +18,7 @@ type Handler interface {
 	Iterator(ctx *context.Context, opts *cmdint.Options) (data.Iterator, error)
 	Match(*context.Context, interface{}, *cmdint.Options) (bool, error)
 	Add(*context.Context, interface{}) error
+	Close(*context.Context) error
 	Out(*context.Context)
 }
 
@@ -39,6 +40,14 @@ func NewBasicHandler(o Output, impl HandlerAdapter) *BasicHandler {
 	return &BasicHandler{o, nil, impl}
 }
 
+func NewBasicOptsHandler(opts *cmdint.Options, outs Outputs, impl HandlerAdapter) (*BasicHandler, error) {
+	o, err := outs.Create(opts)
+	if err != nil {
+		return nil, err
+	}
+	return &BasicHandler{o, nil, impl}, nil
+}
+
 func (this *BasicHandler) RequireScan(name string) bool {
 	return false
 }
@@ -53,7 +62,7 @@ func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (
 		if err != nil {
 			return nil, err
 		}
-		this.elems = data.NewIndexedSliceAccess(elems)
+		this.elems = data.IndexedSliceAccess(elems)
 	}
 	return data.NewIndexedIterator(this.elems), nil
 }
@@ -66,6 +75,9 @@ func (this *BasicHandler) Add(ctx *context.Context, e interface{}) error {
 	return this.output.Add(ctx, e)
 }
 
+func (this *BasicHandler) Close(ctx *context.Context) error {
+	return this.output.Close(ctx)
+}
 func (this *BasicHandler) Out(ctx *context.Context) {
 	this.output.Out(ctx)
 }
@@ -125,6 +137,7 @@ func doAll(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 			}
 		}
 	}
+	h.Close(ctx)
 	h.Out(ctx)
 	return nil
 }
@@ -203,6 +216,7 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 			return err
 		}
 	}
+	h.Close(ctx)
 	h.Out(ctx)
 	return nil
 }

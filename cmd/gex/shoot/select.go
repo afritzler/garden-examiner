@@ -22,5 +22,5 @@ func cmd_select(opts *cmdint.Options) error {
 }
 
 func NewSelectHandler(opts *cmdint.Options) (util.Handler, error) {
-	return &GetHandler{NewHandler(verb.NewSelectOutput())}, nil
+	return NewHandler(verb.NewSelectOutput()), nil
 }

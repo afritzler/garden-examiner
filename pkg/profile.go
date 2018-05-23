@@ -12,20 +12,28 @@ type Profile interface {
 	GetManifest() *v1beta1.CloudProfile
 	GetInfrastructure() string
 	RuntimeObjectWrapper
+	GardenObject
 }
 
 type profile struct {
-	garden   Garden
+	_GardenObject
 	name     string
 	manifest v1beta1.CloudProfile
 }
 
 func NewProfileFromProfileManifest(g Garden, m v1beta1.CloudProfile) Profile {
-	m.Kind = "CloudProfile"
-	m.APIVersion = v1beta1.SchemeGroupVersion.String()
-	return &profile{garden: g, name: m.GetName(), manifest: m}
+	return (&profile{}).new(g, m)
 }
 
+func (s *profile) new(g Garden, m v1beta1.CloudProfile) Profile {
+	m.Kind = "CloudProfile"
+	m.APIVersion = v1beta1.SchemeGroupVersion.String()
+
+	s._GardenObject.new(g)
+	s.name = m.GetName()
+	s.manifest = m
+	return s
+}
 func (s *profile) GetName() string {
 	return s.name
 }

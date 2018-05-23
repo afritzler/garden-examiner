@@ -40,8 +40,11 @@ func (this *_ParallelProcessing) WithPool(p ProcessorPool) ProcessingResult {
 func (this *_ParallelProcessing) Parallel(n int) ProcessingResult {
 	return this.WithPool(NewProcessorPool(n))
 }
-func (this *_ParallelProcessing) Sequential() ProcessingResult {
-	return (&_SequentialProcessing{}).new(this.data)
+func (this *_ParallelProcessing) Synchronously() ProcessingResult {
+	return (&_SynchronousProcessing{}).new(this)
+}
+func (this *_ParallelProcessing) Asynchronously() ProcessingResult {
+	return (&_AsynchronousProcessing{}).new(this)
 }
 func (this *_ParallelProcessing) Unordered() ProcessingResult {
 	data := this.data

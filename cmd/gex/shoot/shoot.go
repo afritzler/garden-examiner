@@ -46,6 +46,20 @@ func NewHandler(o util.Output) *Handler {
 	return h
 }
 
+func NewOptsHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
+	h := &Handler{}
+	b, err := util.NewBasicOptsHandler(opts, o, h)
+	if err != nil {
+		return nil, err
+	}
+	h.BasicHandler = b
+	return h, nil
+}
+
+func (this *Handler) Doit(opts *cmdint.Options) error {
+	return util.Doit(opts, this)
+}
+
 func (this *Handler) GetDefault(opts *cmdint.Options) *string {
 	shoot := opts.GetOptionValue(constants.O_SEL_SHOOT)
 	return shoot
