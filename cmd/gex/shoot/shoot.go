@@ -35,33 +35,13 @@ var filters *util.Filters = util.NewFilters()
 
 /////////////////////////////////////////////////////////////////////////////
 
-type Handler struct {
-	*util.BasicSelfHandler
+type _TypeHandler struct {
 	data map[gube.ShootName]gube.Shoot
 }
 
-func NewHandler(o util.Output) *Handler {
-	h := &Handler{}
-	h.BasicSelfHandler = util.NewBasicSelfHandler(o, h)
-	return h
-}
+var TypeHandler = &_TypeHandler{}
 
-func NewModeHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
-	h := &Handler{}
-	b, err := util.NewBasicModeSelfHandler(opts, o, h)
-	if err != nil {
-		return nil, err
-	}
-	h.BasicSelfHandler = b
-	return h, err
-}
-
-func (this *Handler) GetDefault(opts *cmdint.Options) *string {
-	shoot := opts.GetOptionValue(constants.O_SEL_SHOOT)
-	return shoot
-}
-
-func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {
+func (this *_TypeHandler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {
 	elems, err := ctx.Garden.GetShoots()
 	if err != nil {
 		return nil, err
@@ -77,21 +57,21 @@ func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]inter
 	return a, nil
 }
 
-func (this *Handler) GetFilter() util.Filter {
+func (this *_TypeHandler) GetFilter() util.Filter {
 	return filters
 }
-
-func (this *Handler) RequireScan(name string) bool {
+func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
+	return opts.GetOptionValue(constants.O_SEL_SHOOT)
+}
+func (this *_TypeHandler) RequireScan(name string) bool {
 	i := strings.Index(name, "/")
 	return i < 0
 }
-
-func (this *Handler) MatchName(e interface{}, name string) (bool, error) {
+func (this *_TypeHandler) MatchName(e interface{}, name string) (bool, error) {
 	s := e.(gube.Shoot)
 	return s.GetName().GetName() == name, nil
 }
-
-func (this *Handler) Get(ctx *context.Context, name string) (interface{}, error) {
+func (this *_TypeHandler) Get(ctx *context.Context, name string) (interface{}, error) {
 	i := strings.Index(name, "/")
 	sn := gube.NewShootName(string(name[:i]), string(name[i+1:]))
 	if this.data == nil {

@@ -6,10 +6,10 @@ import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
-	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/cmd/gex/verb"
 	"github.com/afritzler/garden-examiner/pkg"
+	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
 func init() {
@@ -18,23 +18,24 @@ func init() {
 }
 
 func get(opts *cmdint.Options) error {
-	h, err := NewGetHandler(opts)
-	if err != nil {
-		return err
-	}
-	return util.Doit(opts, h)
+	return util.ExecuteMode(opts, get_outputs, TypeHandler)
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-type get_output struct {
-	*util.TableOutput
+var get_outputs = util.NewOutputs(get_regular, util.Outputs{
+	"kubeconfig": util.KubeconfigOutputFactory,
+}).AddManifestOutputs()
+
+func get_regular(opts *cmdint.Options) util.Output {
+	return util.NewProcessingTableOutput(data.Chain().Map(map_get_regular_output),
+		"SEED", "INFRA", "REGION", "PROFILE", "SHOOT", "STATE", "ERROR")
 }
 
-func (this *get_output) Add(ctx *context.Context, e interface{}) error {
+func map_get_regular_output(e interface{}) interface{} {
 	s := e.(gube.Seed)
 	c := s.GetCloud()
-	p, err := ctx.GetProfile(c.Profile)
+	p, err := s.Garden().GetProfile(c.Profile)
 	i := "unknown"
 	if err == nil {
 		i = p.GetInfrastructure()
@@ -45,7 +46,7 @@ func (this *get_output) Add(ctx *context.Context, e interface{}) error {
 	sn := s.GetShoot()
 	if sn != nil {
 		shoot = sn.GetName()
-		sh, err := ctx.GetShoot(sn)
+		sh, err := s.Garden().GetShoot(sn)
 		if err != nil {
 			state = fmt.Sprintf("%s", err)
 		} else {
@@ -54,25 +55,5 @@ func (this *get_output) Add(ctx *context.Context, e interface{}) error {
 
 		}
 	}
-	this.AddLine(
-		[]string{s.GetName(), i, c.Region, c.Profile, shoot, state, util.Oneline(msg, 90)},
-	)
-	return nil
-}
-
-type GetHandler struct {
-	*Handler
-}
-
-func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
-
-	o, err := util.GetOutput(opts, &get_output{
-		util.NewTableOutput([][]string{
-			[]string{"SEED", "INFRA", "REGION", "PROFILE", "SHOOT", "STATE", "ERROR"},
-		}),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &GetHandler{NewHandler(o)}, nil
+	return []string{s.GetName(), i, c.Region, c.Profile, shoot, state, util.Oneline(msg, 90)}
 }

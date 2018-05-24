@@ -1,8 +1,6 @@
 package seed
 
 import (
-	"fmt"
-
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
@@ -17,6 +15,5 @@ func init() {
 }
 
 func kubectl(opts *cmdint.Options) error {
-	fmt.Printf("INITIAL: %v\n", opts.Arguments)
-	return util.DoitRaw("seed", opts, NewHandler(util.NewKubectlOutput(opts.Arguments, nil)))
+	return util.ExecuteOutputRaw("seed", opts, util.NewKubectlOutput(opts.Arguments, nil), TypeHandler)
 }

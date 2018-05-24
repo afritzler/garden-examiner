@@ -10,6 +10,15 @@ import (
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
+type ElementTypeHandler interface {
+	RequireScan(string) bool
+	MatchName(interface{}, string) (bool, error)
+	Get(*context.Context, string) (interface{}, error)
+	GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error)
+	GetFilter() Filter
+	GetDefault(opts *cmdint.Options) *string
+}
+
 type Handler interface {
 	GetDefault(opts *cmdint.Options) *string
 	RequireScan(string) bool
@@ -25,45 +34,50 @@ type Handler interface {
 /////////////////////////////////////////////////////////////////////////////
 // Basic handler
 
-type HandlerAdapter interface {
-	GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error)
-	GetFilter() Filter
-}
-
-type BasicHandler struct {
+type StandardHandler struct {
 	output Output
 	elems  data.IndexedAccess
-	impl   HandlerAdapter
+	impl   ElementTypeHandler
 }
 
-func NewBasicHandler(o Output, impl HandlerAdapter) *BasicHandler {
-	return (&BasicHandler{}).new(o, impl)
+func NewStandardOutputHandler(o Output, impl ElementTypeHandler) *StandardHandler {
+	return (&StandardHandler{}).new(o, impl)
 }
 
-func (this *BasicHandler) new(o Output, impl HandlerAdapter) *BasicHandler {
+func (this *StandardHandler) new(o Output, impl ElementTypeHandler) *StandardHandler {
 	this.output = o
 	this.elems = nil
 	this.impl = impl
 	return this
 }
 
-func NewBasicModeHandler(opts *cmdint.Options, outs Outputs, impl HandlerAdapter) (*BasicHandler, error) {
+func ExecuteOutput(opts *cmdint.Options, o Output, impl ElementTypeHandler) error {
+	return NewStandardOutputHandler(o, impl).Doit(opts)
+}
+func ExecuteOutputRaw(option string, opts *cmdint.Options, o Output, impl ElementTypeHandler) error {
+	return NewStandardOutputHandler(o, impl).DoitRaw(option, opts)
+}
+
+func ExecuteMode(opts *cmdint.Options, outs Outputs, impl ElementTypeHandler) error {
 	o, err := outs.Create(opts)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return (&BasicHandler{}).new(o, impl), nil
+	return NewStandardOutputHandler(o, impl).Doit(opts)
 }
 
-func (this *BasicHandler) RequireScan(name string) bool {
-	return false
+func (this *StandardHandler) Doit(opts *cmdint.Options) error {
+	return Doit(opts, this)
+}
+func (this *StandardHandler) DoitRaw(option string, opts *cmdint.Options) error {
+	return DoitRaw(option, opts, this)
 }
 
-func (this *BasicHandler) GetDefault(opts *cmdint.Options) *string {
-	return nil
+func (this *StandardHandler) GetDefault(opts *cmdint.Options) *string {
+	return this.impl.GetDefault(opts)
 }
 
-func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (data.Iterator, error) {
+func (this *StandardHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (data.Iterator, error) {
 	if this.elems == nil {
 		elems, err := this.impl.GetAll(ctx, opts)
 		if err != nil {
@@ -74,54 +88,26 @@ func (this *BasicHandler) Iterator(ctx *context.Context, opts *cmdint.Options) (
 	return data.NewIndexedIterator(this.elems), nil
 }
 
-func (this *BasicHandler) Match(ctx *context.Context, e interface{}, opts *cmdint.Options) (bool, error) {
+func (this *StandardHandler) RequireScan(name string) bool {
+	return this.impl.RequireScan(name)
+}
+func (this *StandardHandler) MatchName(e interface{}, name string) (bool, error) {
+	return this.impl.MatchName(e, name)
+}
+func (this *StandardHandler) Get(ctx *context.Context, name string) (interface{}, error) {
+	return this.impl.Get(ctx, name)
+}
+func (this *StandardHandler) Match(ctx *context.Context, e interface{}, opts *cmdint.Options) (bool, error) {
 	return this.impl.GetFilter().Match(ctx, e, opts)
 }
-
-func (this *BasicHandler) Add(ctx *context.Context, e interface{}) error {
+func (this *StandardHandler) Add(ctx *context.Context, e interface{}) error {
 	return this.output.Add(ctx, e)
 }
-
-func (this *BasicHandler) Close(ctx *context.Context) error {
+func (this *StandardHandler) Close(ctx *context.Context) error {
 	return this.output.Close(ctx)
 }
-func (this *BasicHandler) Out(ctx *context.Context) {
+func (this *StandardHandler) Out(ctx *context.Context) {
 	this.output.Out(ctx)
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Self Handler
-
-type SelfHandler interface {
-	Handler
-	HandlerAdapter
-}
-
-type BasicSelfHandler struct {
-	self Handler
-	BasicHandler
-}
-
-func NewBasicSelfHandler(o Output, self SelfHandler) *BasicSelfHandler {
-	return (&BasicSelfHandler{}).new(o, self)
-}
-
-func (this *BasicSelfHandler) new(o Output, self SelfHandler) *BasicSelfHandler {
-	this.BasicHandler.new(o, self)
-	this.self = self
-	return this
-}
-
-func NewBasicModeSelfHandler(opts *cmdint.Options, outs Outputs, self SelfHandler) (*BasicSelfHandler, error) {
-	o, err := outs.Create(opts)
-	if err != nil {
-		return nil, err
-	}
-	return (&BasicSelfHandler{}).new(o, self), nil
-}
-
-func (this *BasicSelfHandler) Doit(opts *cmdint.Options) error {
-	return Doit(opts, this.self)
 }
 
 /////////////////////////////////////////////////////////////////////////////

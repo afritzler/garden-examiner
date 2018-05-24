@@ -31,33 +31,18 @@ var filters *util.Filters = util.NewFilters()
 
 /////////////////////////////////////////////////////////////////////////////
 
-type Handler struct {
-	*util.BasicSelfHandler
+type _TypeHandler struct {
 	data map[string]gube.Project
 }
 
-func NewHandler(o util.Output) *Handler {
-	h := &Handler{}
-	h.BasicSelfHandler = util.NewBasicSelfHandler(o, h)
-	return h
-}
+var TypeHandler util.ElementTypeHandler = &_TypeHandler{}
 
-func NewModeHandler(opts *cmdint.Options, o util.Outputs) (*Handler, error) {
-	h := &Handler{}
-	b, err := util.NewBasicModeSelfHandler(opts, o, h)
-	if err != nil {
-		return nil, err
-	}
-	h.BasicSelfHandler = b
-	return h, nil
-}
-
-func (this *Handler) GetDefault(opts *cmdint.Options) *string {
+func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
 	shoot := opts.GetOptionValue(constants.O_SEL_PROJECT)
 	return shoot
 }
 
-func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {
+func (this *_TypeHandler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {
 	elems, err := ctx.Garden.GetProjects()
 	if err != nil {
 		return nil, err
@@ -73,16 +58,19 @@ func (this *Handler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]inter
 	return a, nil
 }
 
-func (this *Handler) GetFilter() util.Filter {
+func (this *_TypeHandler) GetFilter() util.Filter {
 	return filters
 }
+func (this *_TypeHandler) RequireScan(name string) bool {
+	return false
+}
 
-func (this *Handler) MatchName(e interface{}, name string) (bool, error) {
+func (this *_TypeHandler) MatchName(e interface{}, name string) (bool, error) {
 	s := e.(gube.Project)
 	return s.GetName() == name, nil
 }
 
-func (this *Handler) Get(ctx *context.Context, name string) (interface{}, error) {
+func (this *_TypeHandler) Get(ctx *context.Context, name string) (interface{}, error) {
 	if this.data == nil {
 		return ctx.Garden.GetProject(name)
 	}

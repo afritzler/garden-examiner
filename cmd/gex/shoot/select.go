@@ -14,13 +14,5 @@ func init() {
 }
 
 func cmd_select(opts *cmdint.Options) error {
-	h, err := NewSelectHandler(opts)
-	if err != nil {
-		return err
-	}
-	return util.Doit(opts, h)
-}
-
-func NewSelectHandler(opts *cmdint.Options) (util.Handler, error) {
-	return NewHandler(verb.NewSelectOutput()), nil
+	return util.ExecuteOutput(opts, verb.NewSelectOutput(), TypeHandler)
 }

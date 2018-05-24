@@ -18,11 +18,7 @@ func init() {
 }
 
 func get(opts *cmdint.Options) error {
-	h, err := NewGetHandler(opts)
-	if err != nil {
-		return err
-	}
-	return util.Doit(opts, h)
+	return util.ExecuteMode(opts, get_outputs, TypeHandler)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -58,8 +54,4 @@ func map_get_wide_output(e interface{}) interface{} {
 	}
 	return []string{s.GetName().GetName(), s.GetName().GetProjectName(),
 		s.GetInfrastructure(), s.GetSeedName(), cnt, s.GetState(), util.Oneline(s.GetError(), 90)}
-}
-
-func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
-	return NewModeHandler(opts, get_outputs)
 }

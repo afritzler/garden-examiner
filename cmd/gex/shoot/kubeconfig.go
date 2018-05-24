@@ -14,5 +14,5 @@ func init() {
 }
 
 func kubeconfig(opts *cmdint.Options) error {
-	return NewHandler(util.NewKubeconfigOutput()).Doit(opts)
+	return util.ExecuteOutput(opts, util.NewKubeconfigOutput(), TypeHandler)
 }

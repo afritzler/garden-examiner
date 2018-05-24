@@ -34,7 +34,7 @@ func seed_mapper(ctx *context.Context, e interface{}) (interface{}, []string, er
 func kubectl(opts *cmdint.Options) error {
 
 	if len(opts.Arguments) > 0 && opts.Arguments[0] == "cp" {
-		return util.DoitRaw("shoot", opts, NewHandler(util.NewKubectlOutput(opts.Arguments[1:], seed_mapper)))
+		return util.ExecuteOutputRaw("shoot", opts, util.NewKubectlOutput(opts.Arguments[1:], seed_mapper), TypeHandler)
 	}
-	return util.DoitRaw("shoot", opts, NewHandler(util.NewKubectlOutput(opts.Arguments, nil)))
+	return util.ExecuteOutputRaw("shoot", opts, util.NewKubectlOutput(opts.Arguments, nil), TypeHandler)
 }

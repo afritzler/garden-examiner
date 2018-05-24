@@ -4,10 +4,10 @@ import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
-	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/cmd/gex/verb"
 	"github.com/afritzler/garden-examiner/pkg"
+	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
 func init() {
@@ -17,43 +17,19 @@ func init() {
 }
 
 func get(opts *cmdint.Options) error {
-	h, err := NewGetHandler(opts)
-	if err != nil {
-		return err
-	}
-	return util.Doit(opts, h)
+	return util.ExecuteMode(opts, get_outputs, TypeHandler)
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-type get_output struct {
-	*util.TableOutput
+var get_outputs = util.NewOutputs(get_regular)
+
+func get_regular(opts *cmdint.Options) util.Output {
+	return util.NewProcessingTableOutput(data.Chain().Map(map_get_regular_output),
+		"SEED", "INFRA", "REGION", "PROFILE", "SHOOT", "STATE", "ERROR")
 }
 
-var _ util.Output = &get_output{}
-
-func (this *get_output) Add(ctx *context.Context, e interface{}) error {
+func map_get_regular_output(e interface{}) interface{} {
 	p := e.(gube.Project)
-
-	this.AddLine(
-		[]string{p.GetName(), p.GetNamespace()},
-	)
-	return nil
-}
-
-type GetHandler struct {
-	*Handler
-}
-
-func NewGetHandler(opts *cmdint.Options) (util.Handler, error) {
-
-	o, err := util.GetOutput(opts, &get_output{
-		util.NewTableOutput([][]string{
-			[]string{"PROJECT", "NAMESPACE"},
-		}),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &GetHandler{NewHandler(o)}, nil
+	return []string{p.GetName(), p.GetNamespace()}
 }
