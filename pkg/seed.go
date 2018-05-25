@@ -38,7 +38,7 @@ func (s *seed) new(g Garden, m v1beta1.Seed) Seed {
 	m.Kind = "Seed"
 	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 	s._GardenObject.new(g)
-	s.cluster.new(s)
+	s.cluster.new("seed "+m.GetName(), s)
 	s.name = m.GetName()
 	s.manifest = m
 	return s

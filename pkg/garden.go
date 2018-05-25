@@ -48,7 +48,7 @@ func NewGardenFromConfigfile(configfile string) (Garden, error) {
 }
 
 func (g *garden) new(access *garden_access, eff Garden) *garden {
-	g.cluster.new(g)
+	g.cluster.new("garden", g)
 	if eff == nil {
 		eff = g
 	}

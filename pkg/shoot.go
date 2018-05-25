@@ -52,7 +52,7 @@ func (s *shoot) new(g Garden, n *ShootName, m v1beta1.Shoot) Shoot {
 	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 
 	s._GardenObject.new(g)
-	s.cluster.new(s)
+	s.cluster.new("shoot "+n.String(), s)
 	s.name = n
 	s.manifest = m
 	s.namespace = m.GetObjectMeta().GetNamespace()
