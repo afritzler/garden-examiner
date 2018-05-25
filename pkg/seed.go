@@ -5,6 +5,8 @@ import (
 
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	"github.com/gardener/gardener/pkg/operation/common"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -64,6 +66,18 @@ func (s *seed) GetKubeconfig() ([]byte, error) {
 		return nil, fmt.Errorf("failed to get secret for seed %s: %s", s.name, err)
 	}
 	return secret.Data[secretkubeconfig], nil
+}
+
+func (s *seed) GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error) {
+	kubeset, err := s.GetClientset()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret for seed %s: %s", s.name, err)
+	}
+	secret, err := kubeset.CoreV1().Secrets(secretref.Namespace).Get(secretref.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret %s for namespace %s: %s", secretref.Name, secretref.Namespace, err)
+	}
+	return secret, nil
 }
 
 func (s *seed) GetInfrastructure() string {

@@ -17,6 +17,7 @@ type Shoot interface {
 	GetSeed() (Seed, error)
 	GetProject() (Project, error)
 	GetSecretRef() (*corev1.SecretReference, error)
+	GetCloudProviderConfig() (map[string]string, error)
 	GetInfrastructure() string
 	GetState() string
 	GetProgress() int
@@ -140,6 +141,30 @@ func (s *shoot) GetSecretRef() (*corev1.SecretReference, error) {
 		return nil, err
 	}
 	return &corev1.SecretReference{Name: fmt.Sprintf("%s.kubeconfig", s.name.GetName()), Namespace: ns}, nil
+}
+
+func (s *shoot) GetCloudProviderConfig() (map[string]string, error) {
+	ns, err := s.GetNamespaceInSeed()
+	if err != nil {
+		return nil, err
+	}
+	ref, err := &corev1.SecretReference{Name: "cloudprovider", Namespace: ns}, nil
+	if err != nil {
+		return nil, fmt.Errorf("could not get cloudprovider ref for shoot '%s': %s", s.name, err)
+	}
+	seed, err := s.GetSeed()
+	if err != nil {
+		return nil, err
+	}
+	secret, err := seed.GetSecretByRef(*ref)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cloudprovider secret for shoot '%s': %s", s.name, err)
+	}
+	config := map[string]string{}
+	for k, v := range secret.Data {
+		config[k] = string(v)
+	}
+	return config, nil
 }
 
 func (s *shoot) GetInfrastructure() string {

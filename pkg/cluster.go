@@ -15,6 +15,7 @@ type Cluster interface {
 
 	GetNodeCount() (int, error)
 	GetNodes() (map[string]corev1.Node, error)
+	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
 	KubeconfigProvider
 }
 
@@ -91,4 +92,16 @@ func (this *cluster) GetNodes() (map[string]corev1.Node, error) {
 		nodes[n.GetName()] = n
 	}
 	return nodes, nil
+}
+
+func (this *cluster) GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error) {
+	kubeset, err := this.GetClientset()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret: %s", err)
+	}
+	secret, err := kubeset.CoreV1().Secrets(secretref.Namespace).Get(secretref.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get secret %s for namespace %s: %s", secretref.Name, secretref.Namespace, err)
+	}
+	return secret, nil
 }

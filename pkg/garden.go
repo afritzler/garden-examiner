@@ -3,7 +3,6 @@ package gube
 import (
 	"fmt"
 
-	corev1 "k8s.io/api/core/v1"
 	restclient "k8s.io/client-go/rest"
 
 	_ "github.com/afritzler/garden-examiner/pkg/data"
@@ -20,7 +19,6 @@ type Garden interface {
 	GetProjectByNamespace(namespace string) (Project, error)
 	GetProfiles() (map[string]Profile, error)
 	GetProfile(name string) (Profile, error)
-	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
 	Cluster
 }
 
@@ -105,8 +103,4 @@ func (this *garden) GetProfiles() (map[string]Profile, error) {
 
 func (this *garden) GetProfile(name string) (Profile, error) {
 	return this.access.GetProfile(this.effective, name)
-}
-
-func (this *garden) GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error) {
-	return this.access.GetSecretByRef(this.effective, secretref)
 }
