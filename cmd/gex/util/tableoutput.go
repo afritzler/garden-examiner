@@ -71,6 +71,7 @@ func compare_column(c int) CompareFunction {
 
 func FormatTable(data [][]string) {
 	columns := []int{}
+	max := 0
 
 	for _, row := range data {
 		for i, col := range row {
@@ -81,23 +82,40 @@ func FormatTable(data [][]string) {
 					columns[i] = len(col)
 				}
 			}
+			if len(col) > max {
+				max = len(col)
+			}
 		}
 	}
 
-	format := ""
-	for _, col := range columns {
-		format = fmt.Sprintf("%s%%-%ds ", format, col)
-	}
-	format = format[:len(format)-1] + "\n"
-	for _, row := range data {
-		r := []interface{}{}
-		for i := 0; i < len(columns); i++ {
-			if i < len(row) {
-				r = append(r, row[i])
+	if len(columns) <= 3 && max > 100 {
+		first := []string{}
+		for i, row := range data {
+			if i == 0 {
+				first = row
 			} else {
-				r = append(r, "")
+				for c, col := range row {
+					fmt.Printf("%s: %s\n", first[c], col)
+				}
+				fmt.Printf("---\n")
 			}
 		}
-		fmt.Printf(format, r...)
+	} else {
+		format := ""
+		for _, col := range columns {
+			format = fmt.Sprintf("%s%%-%ds ", format, col)
+		}
+		format = format[:len(format)-1] + "\n"
+		for _, row := range data {
+			r := []interface{}{}
+			for i := 0; i < len(columns); i++ {
+				if i < len(row) {
+					r = append(r, row[i])
+				} else {
+					r = append(r, "")
+				}
+			}
+			fmt.Printf(format, r...)
+		}
 	}
 }

@@ -140,23 +140,27 @@ func Doit(opts *cmdint.Options, h Handler) error {
 			opts.Arguments = []string{*def}
 		}
 	}
-	if len(opts.Arguments) > 0 && (len(opts.Arguments) != 1 || opts.Arguments[0] != "all") {
+	all := len(opts.Arguments) == 1 && opts.Arguments[0] == "all"
+	if len(opts.Arguments) > 0 && !all {
 		return doDedicated(ctx, opts, h)
 	} else {
-		return doAll(ctx, opts, h)
+		return doAll(ctx, opts, h, !all)
 	}
 }
 
-func doAll(ctx *context.Context, opts *cmdint.Options, h Handler) error {
+func doAll(ctx *context.Context, opts *cmdint.Options, h Handler, filter bool) error {
 	i, err := h.Iterator(ctx, opts)
 	if err != nil {
 		return err
 	}
 	for i.HasNext() {
+		ok := true
 		e := i.Next()
-		ok, err := h.Match(ctx, e, opts)
-		if err != nil {
-			return err
+		if filter {
+			ok, err = h.Match(ctx, e, opts)
+			if err != nil {
+				return err
+			}
 		}
 		if ok {
 			err := h.Add(ctx, e)

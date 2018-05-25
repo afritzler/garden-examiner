@@ -13,7 +13,15 @@ import (
 )
 
 func init() {
-	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription("get shoot(s)").CmdArgDescription("[<shoot>]")).
+	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription(
+		"get shoot(s)",
+		"supported output modes are:",
+		"- yaml|json|JSON  print manifest",
+		"- wide            additional info",
+		"- kubeconfig      print kube config",
+		"- error           show complete error message",
+	).
+		CmdArgDescription("[<shoot>]")).
 		ArgOption(constants.O_OUTPUT).Short('o').
 		ArgOption(constants.O_SORT).Array()
 }
@@ -27,6 +35,7 @@ func get(opts *cmdint.Options) error {
 var get_outputs = util.NewOutputs(get_regular, util.Outputs{
 	"wide":       get_wide,
 	"kubeconfig": util.KubeconfigOutputFactory,
+	"error":      get_error,
 }).AddManifestOutputs()
 
 func get_regular(opts *cmdint.Options) util.Output {
@@ -36,6 +45,10 @@ func get_regular(opts *cmdint.Options) util.Output {
 func get_wide(opts *cmdint.Options) util.Output {
 	return util.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_wide_output),
 		"SHOOT", "PROJECT", "INFRA", "SEED", "NODES", "STATE", "ERROR")
+}
+func get_error(opts *cmdint.Options) util.Output {
+	return util.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_error_output),
+		"SHOOT", "ERROR")
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -55,4 +68,9 @@ func map_get_wide_output(e interface{}) interface{} {
 	}
 	return []string{s.GetName().GetName(), s.GetName().GetProjectName(),
 		s.GetInfrastructure(), s.GetSeedName(), cnt, s.GetState(), util.Oneline(s.GetError(), 90)}
+}
+
+func map_get_error_output(e interface{}) interface{} {
+	s := e.(gube.Shoot)
+	return []string{s.GetName().GetName(), s.GetError()}
 }

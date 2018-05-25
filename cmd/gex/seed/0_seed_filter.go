@@ -20,7 +20,7 @@ type SeedFilter struct {
 var _ util.Filter = &SeedFilter{}
 
 func (this *SeedFilter) AddOptions(cmd cmdint.ConfigurableCmdTabCommand) cmdint.ConfigurableCmdTabCommand {
-	return cmd.ArgOption(constants.O_SEED)
+	return cmd.ArgOption(constants.O_SEED).Context(constants.O_SEL_SEED)
 }
 
 func (this *SeedFilter) Match(ctx *context.Context, elem interface{}, opts *cmdint.Options) (bool, error) {
