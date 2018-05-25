@@ -61,10 +61,31 @@ func (this *ShellOutput) Out(ctx *context.Context) error {
 		}
 		return fmt.Errorf("node '%s' not found", lookup)
 	}
+	client, err := cluster.GetClientset()
+	if err != nil {
+		return fmt.Errorf("cannot access cluster: %s", err)
+	}
 	fmt.Printf("running shell on node '%s'\n", name)
+	_, err = client.CoreV1().Pods("default").Get("rootpod", metav1.GetOptions{})
+	if err == nil {
+		this.Kubectl(nil, "delete", "pod", "rootpod")
+	}
 	manifest := strings.Replace(shell_manifest, "HOSTNAME", hostnames[name], -1)
 	this.Kubectl([]byte(manifest), "apply", "-f", "-")
-	time.Sleep(5 * time.Second)
+
+	for true {
+		pod, err := client.CoreV1().Pods("default").Get("rootpod", metav1.GetOptions{})
+		if err != nil {
+			fmt.Printf("pod not found: %s\n", err)
+		} else {
+			ip := pod.Status.HostIP
+			if ip != "" && pod.Status.Phase == "Running" {
+				fmt.Printf("host ip found: %s\n", ip)
+				break
+			}
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
 	this.Kubectl(nil, "exec", "-it", "rootpod", "--", "/bin/sh", "-c", "chroot /hostroot")
 	this.Kubectl(nil, "delete", "pod", "rootpod")
 	return nil
