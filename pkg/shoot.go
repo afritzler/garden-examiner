@@ -63,6 +63,13 @@ func (s *shoot) GetName() *ShootName {
 	return s.name
 }
 
+func (s *shoot) AsShoot() (Shoot, error) {
+	return s, nil
+}
+func (s *shoot) GetShootName() *ShootName {
+	return s.GetName()
+}
+
 func (s *shoot) GetNamespaceInSeed() (string, error) {
 	if s.seednamespace == "" {
 		p, err := s.GetProject()

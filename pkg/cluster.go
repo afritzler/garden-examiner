@@ -10,6 +10,11 @@ import (
 	restclient "k8s.io/client-go/rest"
 )
 
+type Shooted interface {
+	AsShoot() (Shoot, error)
+	GetShootName() *ShootName
+}
+
 type Cluster interface {
 	GetClientConfig() (*restclient.Config, error)
 	GetClientset() (*kubernetes.Clientset, error)
@@ -18,6 +23,7 @@ type Cluster interface {
 	GetNodes() (map[string]corev1.Node, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
 	KubeconfigProvider
+	Shooted
 
 	GetClusterKey() string
 }
@@ -42,6 +48,13 @@ func (this *cluster) new(key string, cfg KubeconfigProvider) *cluster {
 
 func (this *cluster) GetClusterKey() string {
 	return this.key
+}
+
+func (this *cluster) AsShoot() (Shoot, error) {
+	return nil, fmt.Errorf("%s not shooted", this.GetClusterKey())
+}
+func (this *cluster) GetShootName() *ShootName {
+	return nil
 }
 
 func (this *cluster) GetKubeconfig() ([]byte, error) {

@@ -16,7 +16,6 @@ type Seed interface {
 	GetName() string
 	GetManifest() *v1beta1.Seed
 	GetCloud() v1beta1.SeedCloud
-	GetShoot() *ShootName
 	GetInfrastructure() string
 	Cluster
 	RuntimeObjectWrapper
@@ -88,7 +87,7 @@ func (s *seed) GetInfrastructure() string {
 	return "unknown"
 }
 
-func (s *seed) GetShoot() *ShootName {
+func (s *seed) GetShootName() *ShootName {
 	for _, o := range s.manifest.ObjectMeta.GetOwnerReferences() {
 		if o.APIVersion == v1beta1.SchemeGroupVersion.String() {
 			if o.Kind == "Shoot" {
@@ -97,4 +96,12 @@ func (s *seed) GetShoot() *ShootName {
 		}
 	}
 	return nil
+}
+
+func (s *seed) AsShoot() (Shoot, error) {
+	n := s.GetShootName()
+	if n == nil {
+		return s.cluster.AsShoot()
+	}
+	return s.garden.GetShoot(n)
 }

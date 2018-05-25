@@ -45,7 +45,7 @@ func map_get_regular_output(e interface{}) interface{} {
 	shoot := ""
 	state := ""
 	msg := ""
-	sn := s.GetShoot()
+	sn := s.GetShootName()
 	if sn != nil {
 		shoot = sn.GetName()
 		sh, err := s.Garden().GetShoot(sn)
