@@ -12,6 +12,8 @@ const (
 	O_SEED    = "seed"
 	O_INFRA   = "infra"
 
+	O_NOFILTER = "nofilter"
+
 	O_NODE = "node"
 
 	O_OUTPUT = "output"

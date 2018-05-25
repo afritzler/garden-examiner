@@ -5,6 +5,7 @@ import (
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	. "github.com/afritzler/garden-examiner/cmd/gex/output"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
@@ -151,6 +152,7 @@ func Doit(opts *cmdint.Options, h Handler) error {
 }
 
 func doAll(ctx *context.Context, opts *cmdint.Options, h Handler, filter bool) error {
+	filter = !opts.IsFlag(constants.O_NOFILTER) && filter
 	i, err := h.Iterator(ctx, opts)
 	if err != nil {
 		return err
@@ -176,6 +178,7 @@ func doAll(ctx *context.Context, opts *cmdint.Options, h Handler, filter bool) e
 }
 
 func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
+	nofilter := opts.IsFlag(constants.O_NOFILTER)
 	for _, n := range opts.Arguments {
 		if h.RequireScan(n) {
 			i, err := h.Iterator(ctx, opts)
@@ -184,6 +187,7 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 			}
 			for _, n := range opts.Arguments {
 				if !h.RequireScan(n) {
+					ok := true
 					e, err := h.Get(ctx, n)
 					if err != nil {
 						return err
@@ -191,9 +195,11 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 					if e == nil {
 						return fmt.Errorf("'%s' not found", n)
 					}
-					ok, err := h.Match(ctx, e, opts)
-					if err != nil {
-						return err
+					if !nofilter {
+						ok, err = h.Match(ctx, e, opts)
+						if err != nil {
+							return err
+						}
 					}
 					if ok {
 						err := h.Add(ctx, e)
@@ -214,13 +220,14 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 						if err != nil {
 							return err
 						}
-						//fmt.Printf("  check %s: %s\n", e.(gube.Shoot).GetName(), ok)
+						//fmt.Printf("  filter %s: %t\n", e.(gube.Shoot).GetName(), ok)
 						if ok {
 							ok, err := h.MatchName(e, n)
 							if err != nil {
 								return err
 							}
 							if ok {
+								//fmt.Printf("  match %s\n", e.(gube.Shoot).GetName())
 								err := h.Add(ctx, e)
 								if err != nil {
 									return err
@@ -234,8 +241,8 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 					}
 				}
 			}
-			h.Out(ctx)
-			return nil
+			h.Close(ctx)
+			return h.Out(ctx)
 		}
 	}
 
