@@ -43,7 +43,9 @@ func Add(tab cmdint.ConfigurableCmdTab, name string, cmd cmdint.CommandFunction)
 	c := tab.SimpleCommand(name, cmd)
 	v := GetVerb(name)
 	if v != nil {
-		v.Command(tab.GetName(), c.AsSubCommand())
+		sc := c.AsSubCommand()
+
+		v.Command(tab.GetName(), sc)
 	}
 	return c
 }

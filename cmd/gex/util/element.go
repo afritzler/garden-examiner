@@ -28,7 +28,7 @@ type Handler interface {
 	Match(*context.Context, interface{}, *cmdint.Options) (bool, error)
 	Add(*context.Context, interface{}) error
 	Close(*context.Context) error
-	Out(*context.Context)
+	Out(*context.Context) error
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -106,8 +106,8 @@ func (this *StandardHandler) Add(ctx *context.Context, e interface{}) error {
 func (this *StandardHandler) Close(ctx *context.Context) error {
 	return this.output.Close(ctx)
 }
-func (this *StandardHandler) Out(ctx *context.Context) {
-	this.output.Out(ctx)
+func (this *StandardHandler) Out(ctx *context.Context) error {
+	return this.output.Out(ctx)
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -166,8 +166,7 @@ func doAll(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 		}
 	}
 	h.Close(ctx)
-	h.Out(ctx)
-	return nil
+	return h.Out(ctx)
 }
 
 func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
@@ -245,6 +244,5 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 		}
 	}
 	h.Close(ctx)
-	h.Out(ctx)
-	return nil
+	return h.Out(ctx)
 }

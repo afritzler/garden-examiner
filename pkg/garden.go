@@ -21,22 +21,23 @@ type Garden interface {
 	GetProfiles() (map[string]Profile, error)
 	GetProfile(name string) (Profile, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
-	KubeconfigProvider
+	Cluster
 }
 
 type garden struct {
+	cluster
 	access    *garden_access
 	effective Garden
 }
+
+var _ Garden = &garden{}
 
 func NewGarden(config *restclient.Config) (Garden, error) {
 	access, err := newGardenAccess(config)
 	if err != nil {
 		return nil, err
 	}
-	g := &garden{access, nil}
-	g.effective = g
-	return g, nil
+	return (&garden{}).new(access, nil), nil
 }
 
 func NewGardenFromConfigfile(configfile string) (Garden, error) {
@@ -44,14 +45,22 @@ func NewGardenFromConfigfile(configfile string) (Garden, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &garden{access, nil}
-	g.effective = g
-	return g, nil
+	return (&garden{}).new(access, nil), nil
 
 }
 
+func (g *garden) new(access *garden_access, eff Garden) *garden {
+	g.cluster.new(g)
+	if eff == nil {
+		eff = g
+	}
+	g.effective = eff
+	g.access = access
+	return g
+}
+
 func (this *garden) NewWrapper(g Garden) Garden {
-	return &garden{this.access, g}
+	return (&garden{}).new(this.access, g)
 }
 
 func (this *garden) GetKubeconfig() ([]byte, error) {

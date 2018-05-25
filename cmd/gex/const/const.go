@@ -11,5 +11,9 @@ const (
 	O_PROJECT = "project"
 	O_SEED    = "seed"
 	O_INFRA   = "infra"
-	O_OUTPUT  = "output"
+
+	O_NODE = "node"
+
+	O_OUTPUT = "output"
+	O_SORT   = "sort"
 )

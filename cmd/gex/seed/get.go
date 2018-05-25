@@ -14,7 +14,8 @@ import (
 
 func init() {
 	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription("get seed(s)").CmdArgDescription("[<seed>]")).
-		ArgOption(constants.O_OUTPUT).Short('o')
+		ArgOption(constants.O_OUTPUT).Short('o').
+		ArgOption(constants.O_SORT).Array()
 }
 
 func get(opts *cmdint.Options) error {
@@ -28,7 +29,7 @@ var get_outputs = util.NewOutputs(get_regular, util.Outputs{
 }).AddManifestOutputs()
 
 func get_regular(opts *cmdint.Options) util.Output {
-	return util.NewProcessingTableOutput(data.Chain().Map(map_get_regular_output),
+	return util.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
 		"SEED", "INFRA", "REGION", "PROFILE", "SHOOT", "STATE", "ERROR")
 }
 

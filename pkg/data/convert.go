@@ -1,7 +1,7 @@
 package data
 
-func Slice(s Iterable) []interface{} {
-	a := []interface{}{}
+func Slice(s Iterable) IndexedSliceAccess {
+	a := IndexedSliceAccess{}
 	i := s.Iterator()
 	for i.HasNext() {
 		a = append(a, i.Next())

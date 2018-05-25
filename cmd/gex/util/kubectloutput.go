@@ -10,29 +10,34 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 )
 
-type kubectl_output struct {
+type ElementMapper func(*context.Context, interface{}) (interface{}, []string, error)
+
+type KubectlOutput struct {
 	*SingleElementOutput
-	mapper func(*context.Context, interface{}) (interface{}, []string, error)
-	args   []string
+	kubecfg []byte
+	mapper  func(*context.Context, interface{}) (interface{}, []string, error)
+	args    []string
 }
 
-var _ Output = &kubectl_output{}
+var _ Output = &KubectlOutput{}
 
-func NewKubectlOutput(args []string, mapper func(*context.Context, interface{}) (interface{}, []string, error)) Output {
-	return &kubectl_output{NewSingleElementOutput(), mapper, args}
+func NewKubectlOutput(args []string, mapper ElementMapper) *KubectlOutput {
+	return &KubectlOutput{NewSingleElementOutput(), nil, mapper, args}
 }
 
-func (this *kubectl_output) Close(ctx *context.Context) error {
+func (this *KubectlOutput) Close(ctx *context.Context) error {
 	return nil
 }
 
-func (this *kubectl_output) Add(ctx *context.Context, e interface{}) error {
+func (this *KubectlOutput) Add(ctx *context.Context, e interface{}) error {
 	if this.mapper != nil {
 		m, args, err := this.mapper(ctx, e)
 		if err != nil {
 			return err
 		}
-		this.args = append(this.args, args...)
+		if args != nil {
+			this.args = append(this.args, args...)
+		}
 		e = m
 	}
 	s := e.(gube.KubeconfigProvider)
@@ -40,15 +45,27 @@ func (this *kubectl_output) Add(ctx *context.Context, e interface{}) error {
 	if err != nil {
 		return err
 	}
-	return this.SingleElementOutput.Add(ctx, cfg)
+	this.kubecfg = cfg
+	return this.SingleElementOutput.Add(ctx, e)
 }
 
-func (this *kubectl_output) Out(ctx *context.Context) error {
-	return Kubectl(this.Elem.([]byte), this.args...)
+func (this *KubectlOutput) Out(ctx *context.Context) error {
+	return this.Kubectl(nil, this.GetArgs()...)
 }
 
-func Kubectl(config []byte, args ...string) error {
+func (this *KubectlOutput) Kubectl(input []byte, args ...string) error {
+	return Kubectl(this.kubecfg, input, args...)
+}
+
+func (this *KubectlOutput) GetArgs() []string {
+	return this.args
+}
+
+func Kubectl(config []byte, input []byte, args ...string) error {
 	r, w, err := os.Pipe()
+	if err != nil {
+		return err
+	}
 	defer r.Close()
 	go func() {
 		w.Write([]byte(config))
@@ -56,14 +73,36 @@ func Kubectl(config []byte, args ...string) error {
 	}()
 
 	eff := append([]string{fmt.Sprintf("--kubeconfig=/dev/fd/%d", 3)}, args...)
-	fmt.Printf("ARGS: %v\n", args)
+	return ExecProcess(input, []*os.File{r}, "kubectl", eff...)
+}
 
-	cmd := exec.Command("kubectl", eff...)
+func ExecProcess(input []byte, extra []*os.File, c string, args ...string) error {
+	var stdin = os.Stdin
+	if input != nil {
+		r, w, err := os.Pipe()
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+		go func() {
+			w.Write([]byte(input))
+			w.Close()
+		}()
+		stdin = r
+	}
+	cmd := exec.Command(c, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.ExtraFiles = []*os.File{r}
-	err = cmd.Run()
-	r.Close()
+	cmd.Stdin = stdin
+	if extra != nil {
+		cmd.ExtraFiles = extra
+	}
+	err := cmd.Run()
+	if extra != nil {
+		for _, f := range extra {
+			f.Close()
+		}
+	}
 	if err == nil && !cmd.ProcessState.Success() {
 		return fmt.Errorf("command failed")
 	}

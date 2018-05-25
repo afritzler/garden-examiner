@@ -6,10 +6,7 @@ import (
 	. "github.com/afritzler/garden-examiner/pkg/data"
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	restclient "k8s.io/client-go/rest"
 )
 
 type Shoot interface {
@@ -20,24 +17,22 @@ type Shoot interface {
 	GetSeed() (Seed, error)
 	GetProject() (Project, error)
 	GetSecretRef() (*corev1.SecretReference, error)
-	GetClientset() (*kubernetes.Clientset, error)
 	GetInfrastructure() string
-	GetNodeCount() (int, error)
 	GetState() string
 	GetProgress() int
 	GetError() string
-	KubeconfigProvider
+	Cluster
 	RuntimeObjectWrapper
 	GardenObject
 }
 
 type shoot struct {
 	_GardenObject
+	cluster
 	name          *ShootName
 	namespace     string
 	seednamespace string
 	manifest      v1beta1.Shoot
-	clientset     *kubernetes.Clientset
 }
 
 var _ Shoot = &shoot{}
@@ -56,6 +51,7 @@ func (s *shoot) new(g Garden, n *ShootName, m v1beta1.Shoot) Shoot {
 	m.APIVersion = v1beta1.SchemeGroupVersion.String()
 
 	s._GardenObject.new(g)
+	s.cluster.new(s)
 	s.name = n
 	s.manifest = m
 	s.namespace = m.GetObjectMeta().GetNamespace()
@@ -138,22 +134,6 @@ func (s *shoot) GetKubeconfig() ([]byte, error) {
 	return secret.Data[secretkubeconfig], nil
 }
 
-func (s *shoot) GetClientConfig() (*restclient.Config, error) {
-	bytes, err := s.GetKubeconfig()
-	if err != nil {
-		return nil, err
-	}
-	return NewConfigFromBytes(bytes)
-}
-
-func (s *shoot) GetClientset() (*kubernetes.Clientset, error) {
-	bytes, err := s.GetKubeconfig()
-	if err != nil {
-		return nil, err
-	}
-	return NewClientFromBytes(bytes)
-}
-
 func (s *shoot) GetSecretRef() (*corev1.SecretReference, error) {
 	ns, err := s.GetNamespace()
 	if err != nil {
@@ -179,18 +159,6 @@ func (s *shoot) GetInfrastructure() string {
 		return "local"
 	}
 	return "unknown"
-}
-
-func (s *shoot) GetNodeCount() (int, error) {
-	cs, err := s.GetClientset()
-	if err != nil {
-		return 0, err
-	}
-	list, err := cs.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil {
-		return 0, fmt.Errorf("failed to get node count for shoot %s: %s", s.name, err)
-	}
-	return len(list.Items), nil
 }
 
 //////////////////////////////////////////////////////////////////////////////
