@@ -3,6 +3,7 @@ package project
 import (
 	"fmt"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
@@ -35,7 +36,7 @@ type _TypeHandler struct {
 	data map[string]gube.Project
 }
 
-var TypeHandler util.ElementTypeHandler = &_TypeHandler{}
+var TypeHandler cmdline.ElementTypeHandler = &_TypeHandler{}
 
 func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
 	shoot := opts.GetOptionValue(constants.O_SEL_PROJECT)

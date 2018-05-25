@@ -3,29 +3,29 @@ package profile
 import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
-	"github.com/afritzler/garden-examiner/cmd/gex/verb"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 	"github.com/afritzler/garden-examiner/pkg"
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
 func init() {
-	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription("get profile(s)").
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription("get profile(s)").
 		CmdArgDescription("[<profile>]")).
 		ArgOption(constants.O_OUTPUT).Short('o')
 }
 
 func get(opts *cmdint.Options) error {
-	return util.ExecuteMode(opts, get_outputs, TypeHandler)
+	return cmdline.ExecuteMode(opts, get_outputs, TypeHandler)
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-var get_outputs = util.NewOutputs(get_regular).AddManifestOutputs()
+var get_outputs = output.NewOutputs(get_regular).AddManifestOutputs()
 
-func get_regular(opts *cmdint.Options) util.Output {
-	return util.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
+func get_regular(opts *cmdint.Options) output.Output {
+	return output.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
 		"PROFILE", "INFRA")
 }
 

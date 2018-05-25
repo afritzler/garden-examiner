@@ -8,7 +8,7 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/env"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 
 	"github.com/afritzler/garden-examiner/pkg"
 )
@@ -92,13 +92,13 @@ func cmd_clear(opts *cmdint.Options) error {
 // general select output
 
 type select_output struct {
-	*util.SingleElementOutput
+	*output.SingleElementOutput
 }
 
-var _ util.Output = &select_output{}
+var _ output.Output = &select_output{}
 
 func NewSelectOutput() *select_output {
-	return &select_output{util.NewSingleElementOutput()}
+	return &select_output{output.NewSingleElementOutput()}
 }
 
 func (this *select_output) Out(ctx *context.Context) error {

@@ -1,4 +1,4 @@
-package util
+package output
 
 import (
 	"github.com/afritzler/garden-examiner/cmd/gex/context"

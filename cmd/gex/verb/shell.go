@@ -5,7 +5,7 @@ import (
 
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 )
@@ -29,7 +29,7 @@ func init() {
 func cmd_shell_garden(opts *cmdint.Options) error {
 	fmt.Printf("using garden: %v\n", opts.Arguments)
 	ctx := context.Get(opts)
-	out := util.NewShellOutput(opts.GetOptionValue(constants.O_NODE), nil)
+	out := output.NewShellOutput(opts.GetOptionValue(constants.O_NODE), nil)
 	out.Add(ctx, ctx.Garden)
 	return out.Out(ctx)
 }

@@ -3,14 +3,14 @@ package shoot
 import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
-	"github.com/afritzler/garden-examiner/cmd/gex/verb"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 
 func init() {
-	filters.AddOptions(verb.Add(GetCmdTab(), "kubectl", kubectl).Raw().
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "kubectl", kubectl).Raw().
 		CmdDescription("run kubectl for shoot or control plane in seed").
 		CmdArgDescription("[--shoot <shoot>] [cp] {<kubectl args/options>}").
 		FlagOption("cp").Short('c').ArgDescription("switch to control plane").
@@ -28,9 +28,9 @@ func seed_kubectl_mapper(ctx *context.Context, e interface{}) (interface{}, []st
 }
 
 func kubectl(opts *cmdint.Options) error {
-	var mapper util.ElementMapper = nil
+	var mapper output.ElementMapper = nil
 	if opts.IsFlag("cp") {
 		mapper = seed_kubectl_mapper
 	}
-	return util.ExecuteOutputRaw("shoot", opts, util.NewKubectlOutput(opts.Arguments, mapper), TypeHandler)
+	return cmdline.ExecuteOutputRaw("shoot", opts, output.NewKubectlOutput(opts.Arguments, mapper), TypeHandler)
 }

@@ -1,4 +1,4 @@
-package util
+package cmdline
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
+	. "github.com/afritzler/garden-examiner/cmd/gex/output"
+	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	_ "github.com/afritzler/garden-examiner/pkg"
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
@@ -15,7 +17,7 @@ type ElementTypeHandler interface {
 	MatchName(interface{}, string) (bool, error)
 	Get(*context.Context, string) (interface{}, error)
 	GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error)
-	GetFilter() Filter
+	GetFilter() util.Filter
 	GetDefault(opts *cmdint.Options) *string
 }
 

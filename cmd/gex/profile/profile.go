@@ -3,6 +3,7 @@ package profile
 import (
 	"fmt"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
@@ -33,7 +34,7 @@ type _TypeHandler struct {
 	data map[string]gube.Profile
 }
 
-var TypeHandler util.ElementTypeHandler = &_TypeHandler{}
+var TypeHandler cmdline.ElementTypeHandler = &_TypeHandler{}
 
 func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
 	return nil

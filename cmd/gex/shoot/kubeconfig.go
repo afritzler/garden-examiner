@@ -3,16 +3,16 @@ package shoot
 import (
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
-	"github.com/afritzler/garden-examiner/cmd/gex/verb"
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 )
 
 func init() {
-	filters.AddOptions(verb.Add(GetCmdTab(), "kubeconfig", kubeconfig).
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "kubeconfig", kubeconfig).
 		CmdDescription("get kubeconfig for shoot").
 		CmdArgDescription("[<shoot>]"))
 }
 
 func kubeconfig(opts *cmdint.Options) error {
-	return util.ExecuteOutput(opts, util.NewKubeconfigOutput(), TypeHandler)
+	return cmdline.ExecuteOutput(opts, output.NewKubeconfigOutput(), TypeHandler)
 }

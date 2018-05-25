@@ -5,15 +5,16 @@ import (
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
-	"github.com/afritzler/garden-examiner/cmd/gex/verb"
 	"github.com/afritzler/garden-examiner/pkg"
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
 func init() {
-	filters.AddOptions(verb.Add(GetCmdTab(), "get", get).CmdDescription(
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription(
 		"get shoot(s)",
 		"supported output modes are:",
 		"- yaml|json|JSON  print manifest",
@@ -27,27 +28,27 @@ func init() {
 }
 
 func get(opts *cmdint.Options) error {
-	return util.ExecuteMode(opts, get_outputs, TypeHandler)
+	return cmdline.ExecuteMode(opts, get_outputs, TypeHandler)
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-var get_outputs = util.NewOutputs(get_regular, util.Outputs{
+var get_outputs = output.NewOutputs(get_regular, output.Outputs{
 	"wide":       get_wide,
-	"kubeconfig": util.KubeconfigOutputFactory,
+	"kubeconfig": output.KubeconfigOutputFactory,
 	"error":      get_error,
 }).AddManifestOutputs()
 
-func get_regular(opts *cmdint.Options) util.Output {
-	return util.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
+func get_regular(opts *cmdint.Options) output.Output {
+	return output.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
 		"SHOOT", "PROJECT", "INFRA", "SEED", "STATE", "ERROR")
 }
-func get_wide(opts *cmdint.Options) util.Output {
-	return util.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_wide_output),
+func get_wide(opts *cmdint.Options) output.Output {
+	return output.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_wide_output),
 		"SHOOT", "PROJECT", "INFRA", "SEED", "NODES", "STATE", "ERROR")
 }
-func get_error(opts *cmdint.Options) util.Output {
-	return util.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_error_output),
+func get_error(opts *cmdint.Options) output.Output {
+	return output.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_error_output),
 		"SHOOT", "ERROR")
 }
 
