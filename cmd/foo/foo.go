@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	. "github.com/afritzler/garden-examiner/cmd/gex/cleanup"
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
@@ -60,4 +62,7 @@ func main() {
 	fmt.Printf("chain: unordered %v\n", r)
 
 	//Test()
+
+	defer Cleanup(func() { fmt.Printf("CLEANUP\n") })()
+	time.Sleep(5 * time.Second)
 }

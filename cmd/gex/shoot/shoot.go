@@ -75,6 +75,7 @@ func (this *_TypeHandler) Get(ctx *context.Context, name string) (interface{}, e
 	i := strings.Index(name, "/")
 	sn := gube.NewShootName(string(name[:i]), string(name[i+1:]))
 	if this.data == nil {
+		//fmt.Printf("use garden %p\n", ctx.Garden)
 		return ctx.Garden.GetShoot(sn)
 	}
 	s, ok := this.data[*sn]

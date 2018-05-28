@@ -19,6 +19,7 @@ type _GardenObject struct {
 }
 
 func (this *_GardenObject) new(g Garden) GardenObject {
+	//fmt.Printf("new garden object for %T(%p)\n", g, g)
 	this.garden = g
 	return this
 }

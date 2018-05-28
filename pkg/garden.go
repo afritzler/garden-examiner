@@ -54,6 +54,7 @@ func (g *garden) new(access *garden_access, eff Garden) *garden {
 	}
 	g.effective = eff
 	g.access = access
+	// fmt.Printf("new garden %p %T(%p)\n", g, eff, eff)
 	return g
 }
 
@@ -74,6 +75,7 @@ func (this *garden) GetShoots() (map[ShootName]Shoot, error) {
 }
 
 func (this *garden) GetShoot(name *ShootName) (Shoot, error) {
+	// fmt.Printf("shoot %s for garden %p %T(%p)\n", *name, this, this.effective, this.effective)
 	return this.access.GetShoot(this.effective, name)
 }
 
@@ -102,5 +104,6 @@ func (this *garden) GetProfiles() (map[string]Profile, error) {
 }
 
 func (this *garden) GetProfile(name string) (Profile, error) {
+	// fmt.Printf("profile %s for garden %p %T(%p)\n", name, this, this.effective, this.effective)
 	return this.access.GetProfile(this.effective, name)
 }

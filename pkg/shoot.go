@@ -18,10 +18,13 @@ type Shoot interface {
 	GetProject() (Project, error)
 	GetSecretRef() (*corev1.SecretReference, error)
 	GetCloudProviderConfig() (map[string]string, error)
+	GetConfigMapEntriesFromSeed(name string) (map[string]string, error)
 	GetInfrastructure() string
 	GetInfrastructureConfig() interface{}
 	GetRegion() string
-	GetAuthURL() string
+	GetIaaSInfo() (IaaSInfo, error)
+	GetProfileName() string
+	GetProfile() (Profile, error)
 	GetState() string
 	GetProgress() int
 	GetError() string
@@ -177,6 +180,18 @@ func (s *shoot) GetCloudProviderConfig() (map[string]string, error) {
 	return config, nil
 }
 
+func (s *shoot) GetConfigMapEntriesFromSeed(name string) (map[string]string, error) {
+	ns, err := s.GetNamespaceInSeed()
+	if err != nil {
+		return nil, err
+	}
+	seed, err := s.GetSeed()
+	if err != nil {
+		return nil, err
+	}
+	return seed.GetConfigMapEntries(name, ns)
+}
+
 func (s *shoot) GetInfrastructure() string {
 	if s.manifest.Spec.Cloud.AWS != nil {
 		return "aws"
@@ -215,16 +230,29 @@ func (s *shoot) GetInfrastructureConfig() interface{} {
 	return nil
 }
 
+func (s *shoot) GetIaaSInfo() (IaaSInfo, error) {
+	k := s.GetInfrastructure()
+	h := iaas[k]
+	if h == nil {
+		return nil, fmt.Errorf("no implementation for IaaS type '%s'", k)
+	}
+	return h.GetIaaSInfo(s)
+}
+
 func (s *shoot) GetRegion() string {
 	return s.manifest.Spec.Cloud.Region
 }
 
-func (s *shoot) GetAuthURL() string {
-	p, err := s.garden.GetProfile(s.manifest.Spec.Cloud.Profile)
-	if err != nil {
-		return ""
+func (s *shoot) GetProfileName() string {
+	return s.manifest.Spec.Cloud.Profile
+}
+
+func (s *shoot) GetProfile() (Profile, error) {
+	name := s.GetProfileName()
+	if name == "" {
+		return nil, fmt.Errorf("no profile found for shoot %s", s.GetName())
 	}
-	return p.GetManifest().Spec.OpenStack.KeyStoneURL
+	return s.garden.GetProfile(name)
 }
 
 //////////////////////////////////////////////////////////////////////////////

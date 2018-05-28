@@ -2,7 +2,6 @@ package iaas
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
@@ -19,13 +18,11 @@ type azure struct {
 func (this *azure) Execute(shoot gube.Shoot, config map[string]string, args ...string) error {
 	err := util.ExecCmd("az login --service-principal -u " + string(config["clientID"]) + " -p " + string(config["clientSecret"]) + " --tenant " + string(config["tenantID"]))
 	if err != nil {
-		fmt.Printf("Error: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot login: %s", err)
 	}
-	err = util.ExecCmd(strings.Join(args, " "))
+	err = util.ExecCmd("az " + strings.Join(args, " "))
 	if err != nil {
-		fmt.Printf("Error: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("cannot execute 'az': %s", err)
 	}
 	return nil
 }

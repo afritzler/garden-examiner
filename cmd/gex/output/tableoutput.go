@@ -40,6 +40,9 @@ func (this *TableProcessingOutput) Out(*context.Context) error {
 		idxs := map[string]int{}
 		for i, n := range this.header {
 			cols[i] = strings.ToLower(n)
+			if strings.HasPrefix(cols[i], "-") {
+				cols[i] = cols[i][1:]
+			}
 			idxs[cols[i]] = i
 		}
 		for _, k := range sort {

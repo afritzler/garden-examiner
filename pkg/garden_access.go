@@ -151,6 +151,7 @@ func (this *garden_access) GetProfiles(eff Garden) (map[string]Profile, error) {
 }
 
 func (this *garden_access) GetProfile(eff Garden, name string) (Profile, error) {
+	//fmt.Printf("GET PROFILE %s\n", name)
 	m, err := this.gardenset.GardenV1beta1().CloudProfiles().Get(name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cloud profile %s: %s", name, err)

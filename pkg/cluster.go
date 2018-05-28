@@ -22,6 +22,8 @@ type Cluster interface {
 	GetNodeCount() (int, error)
 	GetNodes() (map[string]corev1.Node, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
+	GetConfigMap(name, ns string) (*corev1.ConfigMap, error)
+	GetConfigMapEntries(name, ns string) (map[string]string, error)
 	KubeconfigProvider
 	Shooted
 
@@ -134,4 +136,25 @@ func (this *cluster) GetSecretByRef(secretref corev1.SecretReference) (*corev1.S
 			secretref.Name, secretref.Namespace, this.GetClusterKey(), err)
 	}
 	return secret, nil
+}
+
+func (this *cluster) GetConfigMap(name, ns string) (*corev1.ConfigMap, error) {
+	kubeset, err := this.GetClientset()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config map for %s: %s", this.GetClusterKey(), err)
+	}
+	config, err := kubeset.CoreV1().ConfigMaps(ns).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config map %s for namespace %s for %s: %s",
+			name, ns, this.GetClusterKey(), err)
+	}
+	return config, nil
+}
+
+func (this *cluster) GetConfigMapEntries(name, ns string) (map[string]string, error) {
+	config, err := this.GetConfigMap(name, ns)
+	if err != nil {
+		return nil, err
+	}
+	return config.Data, nil
 }
