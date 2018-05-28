@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func Kubectl(config []byte, input []byte, args ...string) error {
@@ -52,4 +53,46 @@ func ExecProcess(input []byte, extra []*os.File, c string, args ...string) error
 		return fmt.Errorf("command failed")
 	}
 	return err
+}
+
+func ExecCmd(cmd string, environment ...string) (err error) {
+	var command *exec.Cmd
+	parts := strings.Fields(cmd)
+	head := parts[0]
+	if len(parts) > 1 {
+		parts = parts[1:len(parts)]
+	} else {
+		parts = nil
+	}
+	command = exec.Command(head, parts...)
+	for index, env := range environment {
+		if index == 0 {
+			command.Env = append(os.Environ(),
+				env,
+			)
+		} else {
+			command.Env = append(command.Env,
+				env,
+			)
+		}
+	}
+	val, err := command.Output()
+	if err != nil {
+		ee, ok := err.(*exec.ExitError)
+		fmt.Println(string(ee.Stderr))
+		if !ok {
+			return err
+		}
+	}
+	fmt.Println(string(val))
+	return nil
+}
+
+func ExecCmdReturnOutput(cmd string, args ...string) (output string) {
+	out, err := exec.Command(cmd, args...).Output()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return strings.TrimSpace(string(out[:]))
 }
