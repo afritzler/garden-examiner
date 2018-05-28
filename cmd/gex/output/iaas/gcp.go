@@ -26,7 +26,7 @@ func (this *gcp) Execute(shoot gube.Shoot, config map[string]string, args ...str
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.Remove(tmpfile.Name()) // clean up
+	defer os.Remove(tmpfile.Name())
 
 	if _, err := tmpfile.Write(serviceaccount); err != nil {
 		log.Fatal(err)
@@ -57,7 +57,6 @@ func (this *gcp) Execute(shoot gube.Shoot, config map[string]string, args ...str
 		fmt.Printf("Error: %s", err)
 		os.Exit(1)
 	}
-
 	err = util.ExecCmd("gcloud auth activate-service-account --key-file=" + tmpfile.Name())
 	if err != nil {
 		fmt.Printf("Error: %s", err)
@@ -73,6 +72,5 @@ func (this *gcp) Execute(shoot gube.Shoot, config map[string]string, args ...str
 		fmt.Printf("Error: %s", err)
 		os.Exit(1)
 	}
-
 	return nil
 }

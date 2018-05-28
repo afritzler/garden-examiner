@@ -19,6 +19,9 @@ type Shoot interface {
 	GetSecretRef() (*corev1.SecretReference, error)
 	GetCloudProviderConfig() (map[string]string, error)
 	GetInfrastructure() string
+	GetInfrastructureConfig() interface{}
+	GetRegion() string
+	GetAuthURL() string
 	GetState() string
 	GetProgress() int
 	GetError() string
@@ -191,6 +194,37 @@ func (s *shoot) GetInfrastructure() string {
 		return "local"
 	}
 	return "unknown"
+}
+
+func (s *shoot) GetInfrastructureConfig() interface{} {
+	if s.manifest.Spec.Cloud.AWS != nil {
+		return s.manifest.Spec.Cloud.AWS
+	}
+	if s.manifest.Spec.Cloud.Azure != nil {
+		return s.manifest.Spec.Cloud.Azure
+	}
+	if s.manifest.Spec.Cloud.OpenStack != nil {
+		return s.manifest.Spec.Cloud.OpenStack
+	}
+	if s.manifest.Spec.Cloud.GCP != nil {
+		return s.manifest.Spec.Cloud.GCP
+	}
+	if s.manifest.Spec.Cloud.Local != nil {
+		return s.manifest.Spec.Cloud.Local
+	}
+	return nil
+}
+
+func (s *shoot) GetRegion() string {
+	return s.manifest.Spec.Cloud.Region
+}
+
+func (s *shoot) GetAuthURL() string {
+	p, err := s.garden.GetProfile(s.manifest.Spec.Cloud.Profile)
+	if err != nil {
+		return ""
+	}
+	return p.GetManifest().Spec.OpenStack.KeyStoneURL
 }
 
 //////////////////////////////////////////////////////////////////////////////
