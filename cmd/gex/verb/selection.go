@@ -18,5 +18,8 @@ func catch_cluster(cmdtab cmdint.CmdTab, opts *cmdint.Options) error {
 	if seed != nil && *seed != "" {
 		return cmdtab.Execute(opts, append([]string{"seed"}, opts.Arguments...))
 	}
-	return cmdtab.Execute(opts, append([]string{"garden"}, opts.Arguments...))
+	if cmdtab.GetCommand("garden") != nil {
+		return cmdtab.Execute(opts, append([]string{"garden"}, opts.Arguments...))
+	}
+	return fmt.Errorf("No target selected")
 }

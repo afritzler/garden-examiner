@@ -43,7 +43,10 @@ func (this *IaasOutput) Out(ctx *context.Context) error {
 }
 
 func (this *IaasOutput) Iaas(input []byte, args ...string) error {
-	shoot := this.Elem.(gube.Shoot)
+	shoot, err := this.Elem.(gube.Shooted).AsShoot()
+	if err != nil {
+		return err
+	}
 	iaasType := shoot.GetInfrastructure()
 	h, ok := iaas.IaasHandlers[iaasType]
 	if !ok {

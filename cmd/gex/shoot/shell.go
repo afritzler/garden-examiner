@@ -27,7 +27,6 @@ func seed_mapper(ctx *context.Context, e interface{}) (interface{}, []string, er
 		return nil, nil, err
 	}
 	return seed, nil, nil
-
 }
 
 func cmd_shell(opts *cmdint.Options) error {
