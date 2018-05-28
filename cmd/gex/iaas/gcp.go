@@ -71,3 +71,14 @@ func (this *gcp) Execute(shoot gube.Shoot, config map[string]string, args ...str
 	}
 	return nil
 }
+
+func (this *gcp) Describe(shoot gube.Shoot) error {
+	info, err := shoot.GetIaaSInfo()
+	if err == nil {
+		iaas := info.(*gube.GCPInfo)
+		fmt.Printf("GCP Information:\n")
+		fmt.Printf("VPC name: %s\n", iaas.GetVpcName())
+		fmt.Printf("Service Accout EMail: %s\n", iaas.GetServiceAccountEMail())
+	}
+	return nil
+}

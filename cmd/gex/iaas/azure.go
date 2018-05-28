@@ -26,3 +26,15 @@ func (this *azure) Execute(shoot gube.Shoot, config map[string]string, args ...s
 	}
 	return nil
 }
+
+func (this *azure) Describe(shoot gube.Shoot) error {
+	info, err := shoot.GetIaaSInfo()
+	if err == nil {
+		iaas := info.(*gube.AzureInfo)
+		fmt.Printf("Azure Information:\n")
+		fmt.Printf("Resource Group: %s\n", iaas.GetResourceGroupName())
+		fmt.Printf("VNet: %s\n", iaas.GetVNetName())
+		fmt.Printf("Subnet: %s\n", iaas.GetSubnetName())
+	}
+	return nil
+}

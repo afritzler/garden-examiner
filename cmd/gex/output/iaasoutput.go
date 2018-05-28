@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
-	"github.com/afritzler/garden-examiner/cmd/gex/output/iaas"
+	"github.com/afritzler/garden-examiner/cmd/gex/iaas"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 

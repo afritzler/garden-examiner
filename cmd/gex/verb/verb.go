@@ -16,6 +16,24 @@ func init() {
 			"The first argument is the cluster type (shoot or seed) followed by",
 			"element names and/or options",
 		)
+
+	NewVerb("iaas", cmdint.MainTab()).CmdArgDescription("<type> ...").
+		CmdDescription("general iaas command",
+			"The first argument is the element type followed by",
+			"element name option and/or iaas arguments/options.",
+			"If no element option is given, it must be defaulted by the",
+			"selection command or the appropriate selection option.",
+		).
+		CatchUnknownCommand(catch_cluster)
+
+	NewVerb("describe", cmdint.MainTab()).CmdArgDescription("<type> ...").
+		CmdDescription("general describe command",
+			"The first argument is the element type followed by",
+			"element name option and/or iaas arguments/options.",
+			"If no element option is given, it must be defaulted by the",
+			"selection command or the appropriate selection option.",
+		).
+		CatchUnknownCommand(catch_cluster)
 }
 
 type Verb struct {

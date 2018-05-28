@@ -8,14 +8,14 @@ import (
 )
 
 func init() {
-	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "iaas", iaas).Raw().
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "iaas", cmd_iaas).Raw().
 		CmdDescription("run iaas specific cmd for shoot or control plane in seed").
 		CmdArgDescription("[--shoot <shoot>] [cp] {<iaas args/options>}").
 		FlagOption("cp").Short('c').ArgDescription("switch to control plane").
 		ArgOption("shoot"))
 }
 
-func iaas(opts *cmdint.Options) error {
+func cmd_iaas(opts *cmdint.Options) error {
 	var mapper output.ElementMapper = nil
 	if opts.IsFlag("cp") {
 		mapper = seed_mapper
