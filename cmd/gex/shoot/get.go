@@ -56,7 +56,6 @@ func get_error(opts *cmdint.Options) output.Output {
 
 func map_get_regular_output(e interface{}) interface{} {
 	s := e.(gube.Shoot)
-	s.GetIaaSInfo()
 	return []string{s.GetName().GetName(), s.GetName().GetProjectName(),
 		s.GetInfrastructure(), s.GetSeedName(), s.GetState(), util.Oneline(s.GetError(), 90)}
 }
