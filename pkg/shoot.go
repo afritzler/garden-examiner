@@ -25,9 +25,12 @@ type Shoot interface {
 	GetIaaSInfo() (IaaSInfo, error)
 	GetProfileName() string
 	GetProfile() (Profile, error)
+	GetReconcilationState() string
+	GetReconcilationError() string
+	GetReconcilationProgress() int
 	GetState() string
-	GetProgress() int
 	GetError() string
+	GetConditionErrors() map[string]string
 	Cluster
 	RuntimeObjectWrapper
 	GardenObject
@@ -120,20 +123,58 @@ func (s *shoot) GetProject() (Project, error) {
 }
 
 func (s *shoot) GetState() string {
+	state := s.GetReconcilationState()
+	if state == "Succeeded" {
+		if s.GetConditionErrors() != nil {
+			return "Problem"
+		}
+	}
+	return state
+}
+
+func (s *shoot) GetReconcilationState() string {
 	return string(s.manifest.Status.LastOperation.State)
 }
 
-func (s *shoot) GetProgress() int {
+func (s *shoot) GetReconcilationProgress() int {
 	return s.manifest.Status.LastOperation.Progress
 }
 
 func (s *shoot) GetError() string {
+	cond := s.GetConditionErrors()
+	e := s.GetReconcilationError()
+	if cond != nil {
+		for n, m := range cond {
+			if e != "" {
+				e = e + "\n"
+
+			}
+			e = e + n + ": " + m
+		}
+	}
+	return e
+}
+
+func (s *shoot) GetReconcilationError() string {
 	if s.manifest.Status.LastOperation.State != v1beta1.ShootLastOperationStateSucceeded {
 		if s.manifest.Status.LastError != nil {
 			return s.manifest.Status.LastError.Description
 		}
 	}
 	return ""
+}
+
+func (s *shoot) GetConditionErrors() map[string]string {
+	errors := map[string]string{}
+	for _, c := range s.manifest.Status.Conditions {
+		if c.Status == "False" {
+			errors[string(c.Type)] = c.Message
+		}
+	}
+	if len(errors) == 0 {
+		return nil
+	}
+	return errors
 }
 
 func (s *shoot) GetKubeconfig() ([]byte, error) {

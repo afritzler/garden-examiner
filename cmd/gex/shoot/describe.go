@@ -59,10 +59,20 @@ func Describe(s gube.Shoot) error {
 	}
 	attrs.Attribute("Number of Nodes", cnt)
 	attrs.Attribute("State", s.GetState())
+	cond := s.GetConditionErrors()
+	if cond != nil {
+		for c, m := range cond {
+			attrs.Attribute("  "+c, m)
+		}
+	} else {
+	}
 	attrs.PrintAttributes()
 	//iaas, err := s.GetIaaSInfo()
 	iaas.Describe(s)
 
-	fmt.Printf("Error: %s\n", s.GetError())
+	e := s.GetError()
+	if e != "" {
+		fmt.Printf("Error: %s\n", s.GetError())
+	}
 	return nil
 }
