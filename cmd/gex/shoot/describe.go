@@ -9,6 +9,7 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/iaas"
 	"github.com/afritzler/garden-examiner/cmd/gex/output"
+	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 
@@ -45,18 +46,20 @@ func (this *describe_output) Out(ctx *context.Context) error {
 }
 
 func Describe(s gube.Shoot) error {
-	fmt.Printf("Shoot: %s\n", s.GetName().GetName())
-	fmt.Printf("Project: %s\n", s.GetName().GetProjectName())
-	fmt.Printf("Profile: %s (%s)\n", s.GetProfileName(), s.GetInfrastructure())
+	attrs := util.NewAttributeSet()
+	attrs.Attribute("Shoot", s.GetName().GetName())
+	attrs.Attribute("Project", s.GetName().GetProjectName())
+	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
 	seed, _ := s.GetNamespaceInSeed()
-	fmt.Printf("Seed Namespace: %s\n", seed)
+	attrs.Attribute("Seed Namespace", seed)
 	cnt := "unknown"
 	c, err := s.GetNodeCount()
 	if err == nil {
 		cnt = fmt.Sprintf("%d", c)
 	}
-	fmt.Printf("Number of Nodes: %s\n", cnt)
-	fmt.Printf("State: %s\n", s.GetState())
+	attrs.Attribute("Number of Nodes", cnt)
+	attrs.Attribute("State", s.GetState())
+	attrs.PrintAttributes()
 	//iaas, err := s.GetIaaSInfo()
 	iaas.Describe(s)
 

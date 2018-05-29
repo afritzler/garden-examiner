@@ -76,10 +76,12 @@ func (this *gcp) Describe(shoot gube.Shoot) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
 		iaas := info.(*gube.GCPInfo)
+		attrs := util.NewAttributeSet()
 		fmt.Printf("GCP Information:\n")
-		fmt.Printf("Region: %s\n", iaas.GetRegion())
-		fmt.Printf("VPC name: %s\n", iaas.GetVpcName())
-		fmt.Printf("Service Accout EMail: %s\n", iaas.GetServiceAccountEMail())
+		attrs.Attribute("Region", iaas.GetRegion())
+		attrs.Attribute("VPC Name", iaas.GetVpcName())
+		attrs.Attribute("Service Accout EMail", iaas.GetServiceAccountEMail())
+		attrs.PrintAttributes()
 	}
 	return nil
 }

@@ -31,11 +31,13 @@ func (this *azure) Describe(shoot gube.Shoot) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
 		iaas := info.(*gube.AzureInfo)
+		attrs := util.NewAttributeSet()
 		fmt.Printf("Azure Information:\n")
-		fmt.Printf("Region: %s\n", iaas.GetRegion())
-		fmt.Printf("Resource Group: %s\n", iaas.GetResourceGroupName())
-		fmt.Printf("VNet: %s\n", iaas.GetVNetName())
-		fmt.Printf("Subnet: %s\n", iaas.GetSubnetName())
+		attrs.Attribute("Region", iaas.GetRegion())
+		attrs.Attribute("Resource Group", iaas.GetResourceGroupName())
+		attrs.Attribute("VNet", iaas.GetVNetName())
+		attrs.Attribute("Subnet", iaas.GetSubnetName())
+		attrs.PrintAttributes()
 	}
 	return nil
 }

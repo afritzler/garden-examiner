@@ -2,6 +2,7 @@ package seed
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/output"
 	"github.com/afritzler/garden-examiner/cmd/gex/shoot"
+	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 
@@ -60,16 +62,18 @@ func (this *describe_output) Out(ctx *context.Context) error {
 }
 
 func Describe(s gube.Seed, shoot_count ShootCount) error {
-	fmt.Printf("Seed: %s\n", s.GetName())
-	fmt.Printf("Profile: %s (%s)\n", s.GetProfileName(), s.GetInfrastructure())
-	fmt.Printf("Region: %s\n", s.GetRegion())
+	attrs := util.NewAttributeSet()
+	attrs.Attribute("Seed", s.GetName())
+	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
+	attrs.Attribute("Region", s.GetRegion())
 	cnt := "unknown"
 	c, err := s.GetNodeCount()
 	if err == nil {
 		cnt = fmt.Sprintf("%d", c)
 	}
-	fmt.Printf("Number of Nodes: %s\n", cnt)
-	fmt.Printf("Number of Shoots: %d\n", shoot_count(s.GetName()))
+	attrs.Attribute("Number of Nodes", cnt)
+	attrs.Attribute("Number of Shoots", strconv.Itoa(shoot_count(s.GetName())))
+	attrs.PrintAttributes()
 	if s.GetShootName() != nil {
 		sh, err := s.AsShoot()
 		if err != nil {

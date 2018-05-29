@@ -37,13 +37,15 @@ func (this *openstack) Describe(shoot gube.Shoot) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
 		iaas := info.(*gube.OpenstackInfo)
+		attrs := util.NewAttributeSet()
 		fmt.Printf("Openstack Information:\n")
-		fmt.Printf("Keystone URL: %s\n", iaas.GetAuthURL())
-		fmt.Printf("Region: %s\n", iaas.GetRegion())
-		fmt.Printf("Router Id: %s\n", iaas.GetRouterId())
-		fmt.Printf("Network Id: %s\n", iaas.GetNetworkId())
-		fmt.Printf("Subnet Id: %s\n", iaas.GetSubnetId())
-		fmt.Printf("Security Group: %s\n", iaas.GetSecurityGroupName())
+		attrs.Attribute("Keystone URL", iaas.GetAuthURL())
+		attrs.Attribute("Region", iaas.GetRegion())
+		attrs.Attribute("Router Id", iaas.GetRouterId())
+		attrs.Attribute("Network Id", iaas.GetNetworkId())
+		attrs.Attribute("Subnet Id", iaas.GetSubnetId())
+		attrs.Attribute("Security Group", iaas.GetSecurityGroupName())
+		attrs.PrintAttributes()
 	}
 	return nil
 }

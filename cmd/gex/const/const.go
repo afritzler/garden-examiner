@@ -11,6 +11,7 @@ const (
 	O_PROJECT = "project"
 	O_SEED    = "seed"
 	O_INFRA   = "infra"
+	O_PROFILE = "profile"
 
 	O_NOFILTER = "nofilter"
 

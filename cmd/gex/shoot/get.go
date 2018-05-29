@@ -41,11 +41,11 @@ var get_outputs = output.NewOutputs(get_regular, output.Outputs{
 
 func get_regular(opts *cmdint.Options) output.Output {
 	return output.NewProcessingTableOutput(opts, data.Chain().Map(map_get_regular_output),
-		"SHOOT", "PROJECT", "INFRA", "SEED", "STATE", "ERROR")
+		"SHOOT", "PROJECT", "INFRA", "PROFLE", "SEED", "STATE", "ERROR")
 }
 func get_wide(opts *cmdint.Options) output.Output {
 	return output.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_wide_output),
-		"SHOOT", "PROJECT", "INFRA", "SEED", "NODES", "IAAS", "STATE", "ERROR")
+		"SHOOT", "PROJECT", "INFRA", "PROFILE", "SEED", "-NODES", "IAAS", "STATE", "ERROR")
 }
 func get_error(opts *cmdint.Options) output.Output {
 	return output.NewProcessingTableOutput(opts, data.Chain().Parallel(20).Map(map_get_error_output),
@@ -57,7 +57,7 @@ func get_error(opts *cmdint.Options) output.Output {
 func map_get_regular_output(e interface{}) interface{} {
 	s := e.(gube.Shoot)
 	return []string{s.GetName().GetName(), s.GetName().GetProjectName(),
-		s.GetInfrastructure(), s.GetSeedName(), s.GetState(), util.Oneline(s.GetError(), 90)}
+		s.GetInfrastructure(), s.GetProfileName(), s.GetSeedName(), s.GetState(), util.Oneline(s.GetError(), 90)}
 }
 
 func map_get_wide_output(e interface{}) interface{} {
@@ -73,7 +73,7 @@ func map_get_wide_output(e interface{}) interface{} {
 		info = iaas.GetKeyInfo()
 	}
 	return []string{s.GetName().GetName(), s.GetName().GetProjectName(),
-		s.GetInfrastructure(), s.GetSeedName(), cnt, info, s.GetState(), util.Oneline(s.GetError(), 90)}
+		s.GetInfrastructure(), s.GetProfileName(), s.GetSeedName(), cnt, info, s.GetState(), util.Oneline(s.GetError(), 90)}
 }
 
 func map_get_error_output(e interface{}) interface{} {
