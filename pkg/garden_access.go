@@ -74,7 +74,7 @@ func (this *garden_access) GetShoot(eff Garden, name *ShootName) (Shoot, error) 
 	}
 	m, err := this.gardenset.GardenV1beta1().Shoots(project.GetNamespace()).Get(name.GetName(), metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get seed %s: %s", name, err)
+		return nil, fmt.Errorf("failed to get shoot %s: %s", *name, err)
 	}
 	return NewShootFromShootManifest(eff, *m)
 }

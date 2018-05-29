@@ -41,15 +41,15 @@ type ShootName struct {
 	projectname string
 }
 
-func (n *ShootName) GetName() string {
+func (n ShootName) GetName() string {
 	return n.name
 }
 
-func (n *ShootName) GetProjectName() string {
+func (n ShootName) GetProjectName() string {
 	return n.projectname
 }
 
-func (n *ShootName) String() string {
+func (n ShootName) String() string {
 	return fmt.Sprintf("%s/%s", n.projectname, n.name)
 }
 

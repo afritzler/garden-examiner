@@ -77,6 +77,7 @@ func (this *gcp) Describe(shoot gube.Shoot) error {
 	if err == nil {
 		iaas := info.(*gube.GCPInfo)
 		fmt.Printf("GCP Information:\n")
+		fmt.Printf("Region: %s\n", iaas.GetRegion())
 		fmt.Printf("VPC name: %s\n", iaas.GetVpcName())
 		fmt.Printf("Service Accout EMail: %s\n", iaas.GetServiceAccountEMail())
 	}

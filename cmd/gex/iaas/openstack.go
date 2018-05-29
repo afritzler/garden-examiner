@@ -39,6 +39,7 @@ func (this *openstack) Describe(shoot gube.Shoot) error {
 		iaas := info.(*gube.OpenstackInfo)
 		fmt.Printf("Openstack Information:\n")
 		fmt.Printf("Keystone URL: %s\n", iaas.GetAuthURL())
+		fmt.Printf("Region: %s\n", iaas.GetRegion())
 		fmt.Printf("Router Id: %s\n", iaas.GetRouterId())
 		fmt.Printf("Network Id: %s\n", iaas.GetNetworkId())
 		fmt.Printf("Subnet Id: %s\n", iaas.GetSubnetId())

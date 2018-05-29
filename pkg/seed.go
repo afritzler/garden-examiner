@@ -16,6 +16,9 @@ type Seed interface {
 	GetName() string
 	GetManifest() *v1beta1.Seed
 	GetCloud() v1beta1.SeedCloud
+	GetRegion() string
+	GetProfileName() string
+	GetProfile() (Profile, error)
 	GetInfrastructure() string
 	Cluster
 	RuntimeObjectWrapper
@@ -53,6 +56,18 @@ func (s *seed) GetManifest() *v1beta1.Seed {
 
 func (s *seed) GetCloud() v1beta1.SeedCloud {
 	return s.manifest.Spec.Cloud
+}
+
+func (s *seed) GetRegion() string {
+	return s.manifest.Spec.Cloud.Region
+}
+
+func (s *seed) GetProfileName() string {
+	return s.manifest.Spec.Cloud.Profile
+}
+
+func (s *seed) GetProfile() (Profile, error) {
+	return s.garden.GetProfile(s.GetProfileName())
 }
 
 func (s *seed) GetRuntimeObject() runtime.Object {

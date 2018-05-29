@@ -287,7 +287,7 @@ func (this *ShootCacher) Get(key interface{}) (interface{}, error) {
 }
 
 func (this *ShootCacher) Key(elem interface{}) interface{} {
-	return elem.(Shoot).GetName()
+	return *elem.(Shoot).GetName()
 }
 
 type ShootCache interface {

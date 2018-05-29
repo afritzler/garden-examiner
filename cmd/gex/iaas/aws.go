@@ -29,6 +29,7 @@ func (this *aws) Describe(shoot gube.Shoot) error {
 	if err == nil {
 		iaas := info.(*gube.AWSInfo)
 		fmt.Printf("AWS Information:\n")
+		fmt.Printf("Region: %s\n", iaas.GetRegion())
 		fmt.Printf("VPC Id: %s\n", iaas.GetVpcId())
 		fmt.Printf("Security Group: %s\n", iaas.GetNodesSecurityGroupId())
 	}

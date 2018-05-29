@@ -32,6 +32,7 @@ func (this *azure) Describe(shoot gube.Shoot) error {
 	if err == nil {
 		iaas := info.(*gube.AzureInfo)
 		fmt.Printf("Azure Information:\n")
+		fmt.Printf("Region: %s\n", iaas.GetRegion())
 		fmt.Printf("Resource Group: %s\n", iaas.GetResourceGroupName())
 		fmt.Printf("VNet: %s\n", iaas.GetVNetName())
 		fmt.Printf("Subnet: %s\n", iaas.GetSubnetName())

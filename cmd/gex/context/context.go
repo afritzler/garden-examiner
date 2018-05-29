@@ -28,3 +28,7 @@ func (this *Context) GetProfile(name string) (gube.Profile, error) {
 func (this *Context) GetShoot(name *gube.ShootName) (gube.Shoot, error) {
 	return this.Garden.GetShoot(name)
 }
+
+func (this *Context) GetShoots() (map[gube.ShootName]gube.Shoot, error) {
+	return this.Garden.GetShoots()
+}
