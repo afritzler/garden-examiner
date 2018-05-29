@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	corev1 "k8s.io/api/core/v1"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
@@ -22,6 +23,7 @@ type Cluster interface {
 	GetNodeCount() (int, error)
 	GetNodes() (map[string]corev1.Node, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
+	GetIngress(name, ns string) (*extv1beta1.Ingress, error)
 	GetConfigMap(name, ns string) (*corev1.ConfigMap, error)
 	GetConfigMapEntries(name, ns string) (map[string]string, error)
 	KubeconfigProvider
@@ -149,6 +151,19 @@ func (this *cluster) GetConfigMap(name, ns string) (*corev1.ConfigMap, error) {
 			name, ns, this.GetClusterKey(), err)
 	}
 	return config, nil
+}
+
+func (this *cluster) GetIngress(name, ns string) (*extv1beta1.Ingress, error) {
+	kubeset, err := this.GetClientset()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ingress for %s: %s", this.GetClusterKey(), err)
+	}
+	ingress, err := kubeset.ExtensionsV1beta1().Ingresses(ns).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ingress %s for namespace %s for %s: %s",
+			name, ns, this.GetClusterKey(), err)
+	}
+	return ingress, nil
 }
 
 func (this *cluster) GetConfigMapEntries(name, ns string) (map[string]string, error) {

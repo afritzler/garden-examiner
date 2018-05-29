@@ -19,6 +19,7 @@ func Kubectl(config []byte, input []byte, args ...string) error {
 	}()
 
 	eff := append([]string{fmt.Sprintf("--kubeconfig=/dev/fd/%d", 3)}, args...)
+	fmt.Printf("kubectl %v\n", eff)
 	return ExecProcess(input, []*os.File{r}, "kubectl", eff...)
 }
 

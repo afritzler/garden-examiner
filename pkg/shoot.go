@@ -6,6 +6,7 @@ import (
 	. "github.com/afritzler/garden-examiner/pkg/data"
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -13,12 +14,17 @@ type Shoot interface {
 	GetName() *ShootName
 	GetNamespaceInSeed() (string, error)
 	GetManifest() *v1beta1.Shoot
+	GetDomainName() string
 	GetSeedName() string
 	GetSeed() (Seed, error)
 	GetProject() (Project, error)
 	GetSecretRef() (*corev1.SecretReference, error)
+	GetSecretContentFromSeed(name string) (map[string]string, error)
+	GetBasicAuth() (user, password string, err error)
 	GetCloudProviderConfig() (map[string]string, error)
 	GetConfigMapEntriesFromSeed(name string) (map[string]string, error)
+	GetIngressFromSeed(name string) (*extv1beta1.Ingress, error)
+	GetIngressHostFromSeed(name string) (string, error)
 	GetInfrastructure() string
 	GetInfrastructureConfig() interface{}
 	GetRegion() string
@@ -113,6 +119,10 @@ func (s *shoot) GetSeedName() string {
 	return *s.manifest.Spec.Cloud.Seed
 }
 
+func (s *shoot) GetDomainName() string {
+	return *s.manifest.Spec.DNS.Domain
+}
+
 func (s *shoot) GetSeed() (Seed, error) {
 	// should never fail with panic :-P
 	return s.garden.GetSeed(s.GetSeedName())
@@ -198,21 +208,37 @@ func (s *shoot) GetSecretRef() (*corev1.SecretReference, error) {
 }
 
 func (s *shoot) GetCloudProviderConfig() (map[string]string, error) {
+	return s.GetSecretContentFromSeed("cloudprovider")
+}
+
+func (s *shoot) GetBasicAuth() (user, password string, err error) {
+	content, err := s.GetSecretContentFromSeed("kubecfg")
+	if err != nil {
+		return "", "", err
+	}
+	user, ok := content["username"]
+	if !ok {
+		return "", "", fmt.Errorf("no user configured for shoot '%s'", s.GetName())
+	}
+	pass, ok := content["password"]
+	if !ok {
+		return "", "", fmt.Errorf("no password configured for shoot '%s'", s.GetName())
+	}
+	return user, pass, nil
+}
+
+func (s *shoot) GetSecretContentFromSeed(name string) (map[string]string, error) {
 	ns, err := s.GetNamespaceInSeed()
 	if err != nil {
 		return nil, err
-	}
-	ref, err := &corev1.SecretReference{Name: "cloudprovider", Namespace: ns}, nil
-	if err != nil {
-		return nil, fmt.Errorf("could not get cloudprovider ref for shoot '%s': %s", s.name, err)
 	}
 	seed, err := s.GetSeed()
 	if err != nil {
 		return nil, err
 	}
-	secret, err := seed.GetSecretByRef(*ref)
+	secret, err := seed.GetSecretByRef(corev1.SecretReference{Name: name, Namespace: ns})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get cloudprovider secret for shoot '%s': %s", s.name, err)
+		return nil, fmt.Errorf("failed to get secret '%s' for shoot '%s': %s", name, s.name, err)
 	}
 	config := map[string]string{}
 	for k, v := range secret.Data {
@@ -231,6 +257,30 @@ func (s *shoot) GetConfigMapEntriesFromSeed(name string) (map[string]string, err
 		return nil, err
 	}
 	return seed.GetConfigMapEntries(name, ns)
+}
+
+func (s *shoot) GetIngressFromSeed(name string) (*extv1beta1.Ingress, error) {
+	ns, err := s.GetNamespaceInSeed()
+	if err != nil {
+		return nil, err
+	}
+	seed, err := s.GetSeed()
+	if err != nil {
+		return nil, err
+	}
+	return seed.GetIngress(name, ns)
+}
+
+func (s *shoot) GetIngressHostFromSeed(name string) (string, error) {
+	ingress, err := s.GetIngressFromSeed(name)
+	if err != nil {
+		return "", err
+	}
+	for _, r := range ingress.Spec.Rules {
+		return r.Host, nil
+	}
+	return "", fmt.Errorf("no rule entry found for ingress '%s' of '%s' in seed %s",
+		name, s.GetName(), s.GetName())
 }
 
 func (s *shoot) GetInfrastructure() string {
