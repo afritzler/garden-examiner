@@ -45,8 +45,10 @@ func setup(opts *cmdint.Options) error {
 		selGarden := opts.GetOptionValue(constants.O_SEL_GARDEN)
 		if selGarden != nil {
 			gardenConfig, err = cfg.GetConfig(*selGarden)
+			c.Name = *selGarden
 		} else {
 			gardenConfig, err = cfg.GetConfig("")
+			c.Name = cfg.GetDefault()
 		}
 		if err != nil {
 			return err
@@ -72,7 +74,9 @@ func setup(opts *cmdint.Options) error {
 		if err != nil {
 			return err
 		}
+		c.GardenSetConfig = gube.NewDefaultGardenSetConfig(g)
 		c.Garden = gube.NewCachedGarden(g)
+		c.Name = "default"
 	}
 	return nil
 }

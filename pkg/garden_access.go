@@ -30,14 +30,10 @@ func newGardenAccess(config *restclient.Config) (*garden_access, error) {
 	return &garden_access{gardenset: gardenset, kubeset: kubeset}, nil
 }
 
-func newGardenAccessFromConfigfile(configfile string) (*garden_access, error) {
-	bytes, err := ioutil.ReadFile(configfile)
-	if err != nil {
-		return nil, fmt.Errorf("cannot read kubeconfig '%s': %s", configfile, err)
-	}
+func newGardenAccessFromBytes(bytes []byte) (*garden_access, error) {
 	config, err := NewConfigFromBytes(bytes)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create kubeconfig from '%s': %s", configfile, err)
+		return nil, fmt.Errorf("cannot create kubeconfig: %s", err)
 	}
 
 	g, err := newGardenAccess(config)
@@ -45,6 +41,18 @@ func newGardenAccessFromConfigfile(configfile string) (*garden_access, error) {
 		g.kubeconfig = bytes
 	}
 	return g, err
+}
+
+func newGardenAccessFromConfigfile(configfile string) (*garden_access, error) {
+	bytes, err := ioutil.ReadFile(configfile)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read kubeconfig '%s': %s", configfile, err)
+	}
+	a, err := newGardenAccessFromBytes(bytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read kubeconfig '%s': %s", configfile, err)
+	}
+	return a, nil
 }
 
 func (this *garden_access) GetKubeconfig() []byte {

@@ -47,6 +47,15 @@ func NewGardenFromConfigfile(configfile string) (Garden, error) {
 
 }
 
+func NewGardenFromCBytes(bytes []byte) (Garden, error) {
+	access, err := newGardenAccessFromBytes(bytes)
+	if err != nil {
+		return nil, err
+	}
+	return (&garden{}).new(access, nil), nil
+
+}
+
 func (g *garden) new(access *garden_access, eff Garden) *garden {
 	g.cluster.new("garden", g)
 	if eff == nil {

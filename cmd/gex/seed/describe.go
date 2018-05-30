@@ -62,8 +62,15 @@ func (this *describe_output) Out(ctx *context.Context) error {
 }
 
 func Describe(s gube.Seed, shoot_count ShootCount) error {
+
 	attrs := util.NewAttributeSet()
 	attrs.Attribute("Seed", s.GetName())
+	cfg, err := s.GetClientConfig()
+	if err == nil {
+		attrs.Attribute("API Server", cfg.Host)
+	} else {
+		attrs.Attribute("API Server", "unknown")
+	}
 	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
 	attrs.Attribute("Region", s.GetRegion())
 	cnt := "unknown"

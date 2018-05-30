@@ -29,6 +29,13 @@ func init() {
 
 func cmd_select(opts *cmdint.Options) error {
 	found := 0
+	if v := opts.GetOptionValue(constants.O_SEL_GARDEN); v != nil {
+		fmt.Printf("GARDEN  = %s\n", *v)
+		found++
+	} else {
+		ctx := context.Get(opts)
+		fmt.Printf("GARDEN  = %s  (defaulted by kubeconfig or gexconfig)\n", ctx.Name)
+	}
 	if v := opts.GetOptionValue(constants.O_SEL_SHOOT); v != nil {
 		fmt.Printf("SHOOT   = %s\n", *v)
 		found++
@@ -55,18 +62,21 @@ type clear_output struct {
 }
 
 func (this *clear_output) Out(opts *cmdint.Options) error {
+	garden := opts.GetOptionValue(constants.O_SEL_GARDEN)
 	shoot := opts.GetOptionValue(constants.O_SEL_SHOOT)
 	project := opts.GetOptionValue(constants.O_SEL_PROJECT)
 	seed := opts.GetOptionValue(constants.O_SEL_SEED)
 
 	if len(opts.Arguments) > 0 {
 		for _, n := range opts.Arguments {
-			b, d := cmdint.SelectBest(n, "shoot", "seed", "project")
+			b, d := cmdint.SelectBest(n, "shoot", "seed", "project", "garden")
 			if d > len(n)/2 {
 				return fmt.Errorf("unknown selection type '%s'", n)
 			}
 			fmt.Printf("clearing %s selection\n", b)
 			switch b {
+			case "garden":
+				garden = nil
 			case "shoot":
 				shoot = nil
 			case "seed":
@@ -80,7 +90,7 @@ func (this *clear_output) Out(opts *cmdint.Options) error {
 		seed = nil
 		project = nil
 	}
-	this.Write(shoot, project, seed)
+	this.Write(garden, shoot, project, seed)
 	return nil
 }
 
@@ -102,10 +112,13 @@ func NewSelectOutput() *select_output {
 }
 
 func (this *select_output) Out(ctx *context.Context) error {
+	garden := ""
 	shoot := ""
 	seed := ""
 	project := ""
 	switch e := this.Elem.(type) {
+	case gube.GardenConfig:
+		garden = e.GetName()
 	case gube.Shoot:
 		shoot = e.GetName().String()
 		project = e.GetName().GetProjectName()
@@ -118,12 +131,13 @@ func (this *select_output) Out(ctx *context.Context) error {
 		panic(fmt.Errorf("invalid elem type for select: %T\n", this.Elem))
 	}
 
-	this.Write(&shoot, &project, &seed)
+	this.Write(&garden, &shoot, &project, &seed)
 	return nil
 }
 
-func (this *select_output) Write(shoot, project, seed *string) {
+func (this *select_output) Write(garden, shoot, project, seed *string) {
 	env.Warning()
+	envout(garden, "GARDEN")
 	envout(shoot, "SHOOT")
 	envout(project, "PROJECT")
 	envout(seed, "SEED")

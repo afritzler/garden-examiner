@@ -1,13 +1,10 @@
 package garden
 
 import (
-	"fmt"
-
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
-	"github.com/afritzler/garden-examiner/cmd/gex/context"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
 )
 
 func init() {
@@ -17,16 +14,6 @@ func init() {
 		ArgOption("garden"))
 }
 
-// func kubectl(opts *cmdint.Options) error {
-// 	return cmdline.ExecuteOutputRaw("garden", opts, output.NewKubectlOutput(opts.Arguments, nil), TypeHandler)
-// }
-
 func kubectl(opts *cmdint.Options) error {
-	fmt.Printf("using garden: %v\n", opts.Arguments)
-	ctx := context.Get(opts)
-	cfg, err := ctx.Garden.GetKubeconfig()
-	if err != nil {
-		return err
-	}
-	return util.Kubectl(cfg, nil, append([]string{"-n", "garden"}, opts.Arguments...)...)
+	return cmdline.ExecuteOutputRaw("garden", opts, output.NewKubectlOutput(append([]string{"-n", "garden"}, opts.Arguments...), nil), TypeHandler)
 }
