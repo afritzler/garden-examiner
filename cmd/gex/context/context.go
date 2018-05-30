@@ -7,7 +7,8 @@ import (
 )
 
 type Context struct {
-	Garden gube.CachedGarden
+	GardenSetConfig gube.GardenSetConfig
+	Garden          gube.CachedGarden
 }
 
 func Get(opts *cmdint.Options) *Context {

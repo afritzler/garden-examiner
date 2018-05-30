@@ -1,11 +1,6 @@
 package verb
 
 import (
-	"fmt"
-
-	"github.com/afritzler/garden-examiner/cmd/gex/context"
-	"github.com/afritzler/garden-examiner/cmd/gex/util"
-
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 )
 
@@ -19,17 +14,6 @@ func init() {
 			"If nothing is slected kubectl is run for the garden cluster.",
 		).
 		CatchUnknownCommand(catch_cluster).Raw().
-		SimpleCommand("garden", cmd_kubectl_garden).Raw().
 		CmdArgDescription("{<kubectl opts/args>}").
 		CmdDescription("run kubectl for garden cluster")
-}
-
-func cmd_kubectl_garden(opts *cmdint.Options) error {
-	fmt.Printf("using garden: %v\n", opts.Arguments)
-	ctx := context.Get(opts)
-	cfg, err := ctx.Garden.GetKubeconfig()
-	if err != nil {
-		return err
-	}
-	return util.Kubectl(cfg, nil, append([]string{"-n", "garden"}, opts.Arguments...)...)
 }
