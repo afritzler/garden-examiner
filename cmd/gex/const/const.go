@@ -2,6 +2,7 @@ package constants
 
 const (
 	O_KUBECONFIG = "kubeconfig"
+	O_GEXCONFIG  = "gexconfig"
 
 	O_SEL_PROJECT = "selected-project"
 	O_SEL_SHOOT   = "selected-shoot"

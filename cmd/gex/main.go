@@ -21,30 +21,58 @@ import (
 func main() {
 	cmdint.MainTab().CmdDescription("garden examiner").CmdArgDescription("<options> <command> <options>").
 		SetupFunction(setup).
+		ArgOption(constants.O_GEXCONFIG).Env("GEXCONFIG").
 		ArgOption(constants.O_KUBECONFIG).Env("KUBECONFIG").
 		ArgOption(constants.O_SEL_SHOOT).Env("GEX_SHOOT").
 		ArgOption(constants.O_SEL_PROJECT).Env("GEX_PROJECT").
-		ArgOption(constants.O_SEL_SEED).Env("GEX_SEED")
+		ArgOption(constants.O_SEL_SEED).Env("GEX_SEED").
+		ArgOption(constants.O_SEL_GARDEN).Env("GEX_GARDEN")
+
 	cmdint.Run()
 }
 
 func setup(opts *cmdint.Options) error {
-	configfile := opts.GetOptionValue(constants.O_KUBECONFIG)
-	if configfile == nil || *configfile == "" {
-		return fmt.Errorf("no kubeconfig specified")
-	}
-	fmt.Printf("kubeconfig is %s\n", *configfile)
-	//config, err := clientcmd.BuildConfigFromFlags("", *configfile)
-	//if err != nil {
-	//	return err
-	//}
-
-	//g, err := gube.NewGarden(config)
-	g, err := gube.NewGardenFromConfigfile(*configfile)
-	if err != nil {
-		return err
-	}
-	c := &context.Context{Garden: gube.NewCachedGarden(g)}
+	c := &context.Context{}
 	opts.Context = c
+	gexconfig := opts.GetOptionValue(constants.O_GEXCONFIG)
+	if gexconfig != nil {
+		cfg, err := gube.NewGardenSetConfig(*gexconfig)
+		if err != nil {
+			return err
+		}
+		var gardenConfig gube.GardenConfig
+		c.GardenSetConfig = cfg
+		selGarden := opts.GetOptionValue(constants.O_SEL_GARDEN)
+		if selGarden != nil {
+			gardenConfig, err = cfg.GetConfig(*selGarden)
+		} else {
+			gardenConfig, err = cfg.GetConfig("")
+		}
+		if err != nil {
+			return err
+		}
+		g, err := gardenConfig.GetGarden()
+		if err != nil {
+			return err
+		}
+		c.Garden = gube.NewCachedGarden(g)
+	} else {
+		configfile := opts.GetOptionValue(constants.O_KUBECONFIG)
+		if configfile == nil || *configfile == "" {
+			return fmt.Errorf("no kubeconfig specified")
+		}
+		fmt.Printf("kubeconfig is %s\n", *configfile)
+		//config, err := clientcmd.BuildConfigFromFlags("", *configfile)
+		//if err != nil {
+		//	return err
+		//}
+
+		//g, err := gube.NewGarden(config)
+		g, err := gube.NewGardenFromConfigfile(*configfile)
+		if err != nil {
+			return err
+		}
+		c.Garden = gube.NewCachedGarden(g)
+	}
 	return nil
 }

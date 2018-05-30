@@ -22,23 +22,30 @@ func init() {
 
 func register(opts *cmdint.Options) error {
 	ctx := context.Get(opts)
+	githubURL := ""
+	if ctx.GardenSetConfig != nil {
+		githubURL = ctx.GardenSetConfig.GetGithubURL()
+	}
 	switch len(opts.Arguments) {
 	case 0:
-		return register_garden(ctx.Garden, "")
+		return register_garden(githubURL, ctx.Garden, "")
 	case 1:
-		return register_garden(ctx.Garden, opts.Arguments[0])
+		return register_garden(githubURL, ctx.Garden, opts.Arguments[0])
 	default:
 		return fmt.Errorf("One optional email argument required")
 	}
 }
 
-func getEmail() string {
-	return util.ExecCmdReturnOutput("bash", "-c", "curl -ks https://github.wdf.sap.corp/api/v3/users/"+os.Getenv("USER")+" | jq -r .email")
+func getEmail(githubURL string) string {
+	if githubURL == "" {
+		return "null"
+	}
+	return util.ExecCmdReturnOutput("bash", "-c", "curl -ks "+githubURL+"/api/v3/users/"+os.Getenv("USER")+" | jq -r .email")
 }
 
-func register_garden(g gube.Garden, email string) error {
+func register_garden(githubURL string, g gube.Garden, email string) error {
 	if email == "" {
-		email = getEmail()
+		email = getEmail(githubURL)
 		if email == "null" {
 			return fmt.Errorf("Could not read github email address")
 		}
