@@ -40,7 +40,9 @@ func getEmail(githubURL string) string {
 	if githubURL == "" {
 		return "null"
 	}
-	return util.ExecCmdReturnOutput("bash", "-c", "curl -ks "+githubURL+"/api/v3/users/"+os.Getenv("USER")+" | jq -r .email")
+	res := util.ExecCmdReturnOutput("bash", "-c", "curl -ks "+githubURL+"/api/v3/users/"+os.Getenv("USER")+" | jq -r .email")
+	fmt.Printf("used github email: %s\n", res)
+	return res
 }
 
 func register_garden(githubURL string, g gube.Garden, email string) error {
