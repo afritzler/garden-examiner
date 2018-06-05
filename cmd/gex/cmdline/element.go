@@ -216,9 +216,12 @@ func doDedicated(ctx *context.Context, opts *cmdint.Options, h Handler) error {
 					}
 					for i.HasNext() {
 						e := i.Next()
-						ok, err := h.Match(ctx, e, opts)
-						if err != nil {
-							return err
+						ok := true
+						if !nofilter {
+							ok, err = h.Match(ctx, e, opts)
+							if err != nil {
+								return err
+							}
 						}
 						//fmt.Printf("  filter %s: %t\n", e.(gube.Shoot).GetName(), ok)
 						if ok {
