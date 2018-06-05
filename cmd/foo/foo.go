@@ -5,6 +5,7 @@ import (
 	"time"
 
 	. "github.com/afritzler/garden-examiner/cmd/gex/cleanup"
+	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg/data"
 )
 
@@ -62,6 +63,34 @@ func main() {
 	fmt.Printf("chain: unordered %v\n", r)
 
 	//Test()
+	fmt.Printf("---\n")
+	dims := []string{"A", "B", "C", "D", "E", "F"}
+	kube := util.NewInfoKube(dims)
+
+	kube.AddElement(nil, "a1", "b1", "c1", "d1", "e1", "f1")
+	kube.Table2("", "D", "B", util.Coord{"F": "f1", "A": "a1", "C": "c1"})
+	fmt.Printf("---\n")
+	kube.Table("", []string{"D", "B", "C"}, util.Coord{"F": "f1", "A": "a1"})
+	fmt.Printf("---\n")
+
+	dims = []string{"infra", "profile", "region"}
+	kube = util.NewInfoKube(dims)
+
+	kube.AddElement("A1a", "aws", "aws1", "east")
+	kube.AddElement("A1b", "aws", "aws1", "east")
+	kube.AddElement("A2", "aws", "aws1", "west")
+	kube.AddElement("A3", "aws", "aws2", "west")
+	kube.AddElement("O1", "os", "os1", "eu")
+	kube.AddElement("O2", "os", "os1", "eu")
+	kube.AddElement("O3", "os", "os1", "us")
+
+	kube.GetKey("infra", "aws").AddKey("region", "north")
+
+	kube.Table2("n> ", "profile", "region", util.Coord{"infra": "aws"})
+	kube.Print2("o> ", "profile", "region", "infra", "aws")
+	kube.Table1("n> ", "profile", util.Coord{"infra": "aws"})
+	kube.Print2("-> ", "region", "profile", "infra", "aws")
+	kube.Print2("-> ", "region", "profile", "infra", "os")
 
 	defer Cleanup(func() { fmt.Printf("CLEANUP\n") })()
 	time.Sleep(5 * time.Second)

@@ -19,8 +19,8 @@ type GardenSetConfig interface {
 type GardenConfig interface {
 	GetName() string
 	GetDescription() string
-	GetKubeconfig() ([]byte, error)
 	GetGarden() (Garden, error)
+	KubeconfigProvider
 }
 
 func NewDefaultGardenSetConfig(g Garden) GardenSetConfig {
