@@ -224,7 +224,7 @@ func (this *InfoKube) table1(list []Coord, gap, dx string, keys Coord, names *di
 		fmt.Printf("%sno entry\n", gap)
 	} else {
 		for kx, kubex := range sub {
-			head = append(head, kx)
+			head = append(head, "-"+kx)
 			kubex = kubex.proceed(end, keys)
 			if kubex != nil {
 				line = append(line, strconv.Itoa(kubex.count))
@@ -319,7 +319,7 @@ func (this *InfoKube) col_table2(list []Coord, gap, dy, dx string, middle, end [
 			if kubex != nil {
 				sub, ok := kubex.values[dy]
 				if ok {
-					head = append(head, kx)
+					head = append(head, "-"+kx)
 					for ky, kubey := range sub {
 						i, ok := indices[ky]
 						if !ok {
@@ -374,7 +374,7 @@ func (this *InfoKube) row_table2(list []Coord, gap, dy, dx string, middle, end [
 						if !ok {
 							i = len(head)
 							indices[kx] = i
-							head = append(head, kx)
+							head = append(head, "-"+kx)
 						}
 						for i >= len(line) {
 							line = append(line, "0")
@@ -412,83 +412,6 @@ func (this *InfoKube) proceed(dims []string, keys Coord) *InfoKube {
 		}
 	}
 	return sub
-}
-
-func (this *InfoKube) Print2(gap, dy, dx string, keys ...string) {
-	indices := map[string]int{}
-	data := [][]string{}
-	head := []string{dy}
-	if len(keys)%2 == 1 {
-		panic("list of pairs required")
-	}
-	if len(keys) > 0 {
-		kube, ok := this.values[keys[0]][keys[1]]
-		if ok {
-			kube.Print2(gap, dy, dx, keys[2:]...)
-		} else {
-			fmt.Printf("%sno entry\n", gap)
-		}
-	} else {
-		if stringIndex(dy, this.dimensions) > stringIndex(dx, this.dimensions) {
-			values, ok := this.values[dx]
-			if !ok {
-				fmt.Printf("%sno entry\n", gap)
-			} else {
-				for kx, kubex := range values {
-					sub, ok := kubex.values[dy]
-					if ok {
-						head = append(head, kx)
-						for ky, kubex := range sub {
-							i, ok := indices[ky]
-							if !ok {
-								i = len(data)
-								indices[ky] = i
-								data = append(data, []string{ky})
-							}
-							line := data[i]
-							for len(head) > len(line) {
-								line = append(line, "0")
-							}
-							line[len(head)-1] = strconv.Itoa(kubex.count)
-							data[i] = line
-						}
-					}
-				}
-			}
-		} else {
-			values, ok := this.values[dy]
-			if !ok {
-				fmt.Printf("%sno entry\n", gap)
-			} else {
-				for ky, kubey := range values {
-					line := []string{ky}
-					sub, ok := kubey.values[dx]
-					if ok {
-						for kx, kubex := range sub {
-							i, ok := indices[kx]
-							if !ok {
-								i = len(head)
-								indices[kx] = i
-								head = append(head, kx)
-							}
-							for i >= len(line) {
-								line = append(line, "0")
-							}
-							line[i] = strconv.Itoa(kubex.count)
-						}
-						data = append(data, line)
-					}
-				}
-			}
-		}
-		for k, v := range data {
-			for len(v) < len(head) {
-				v = append(v, "0")
-			}
-			data[k] = v
-		}
-		FormatTable(gap, append([][]string{head}, data...))
-	}
 }
 
 func stringIndex(s string, a []string) int {

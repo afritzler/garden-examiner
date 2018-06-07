@@ -86,11 +86,10 @@ func main() {
 
 	kube.GetKey("infra", "aws").AddKey("region", "north")
 
-	kube.Table2("n> ", "profile", "region", util.Coord{"infra": "aws"})
-	kube.Print2("o> ", "profile", "region", "infra", "aws")
-	kube.Table1("n> ", "profile", util.Coord{"infra": "aws"})
-	kube.Print2("-> ", "region", "profile", "infra", "aws")
-	kube.Print2("-> ", "region", "profile", "infra", "os")
+	kube.Table2("-> ", "profile", "region", util.Coord{"infra": "aws"})
+	kube.Table1("-> ", "profile", util.Coord{"infra": "aws"})
+	kube.Table2("-> ", "region", "profile", util.Coord{"infra": "aws"})
+	kube.Table2("-> ", "region", "profile", util.Coord{"infra": "os"})
 
 	defer Cleanup(func() { fmt.Printf("CLEANUP\n") })()
 	time.Sleep(5 * time.Second)
