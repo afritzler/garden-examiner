@@ -144,10 +144,16 @@ func (s *shoot) GetState() string {
 }
 
 func (s *shoot) GetReconcilationState() string {
+	if s.manifest.Status.LastOperation == nil {
+		return "unknown"
+	}
 	return string(s.manifest.Status.LastOperation.State)
 }
 
 func (s *shoot) GetReconcilationProgress() int {
+	if s.manifest.Status.LastOperation == nil {
+		return 0
+	}
 	return s.manifest.Status.LastOperation.Progress
 }
 
@@ -167,6 +173,9 @@ func (s *shoot) GetError() string {
 }
 
 func (s *shoot) GetReconcilationError() string {
+	if s.manifest.Status.LastOperation == nil {
+		return ""
+	}
 	if s.manifest.Status.LastOperation.State != v1beta1.ShootLastOperationStateSucceeded {
 		if s.manifest.Status.LastError != nil {
 			return s.manifest.Status.LastError.Description

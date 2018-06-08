@@ -53,6 +53,7 @@ func setup(opts *cmdint.Options) error {
 		if err != nil {
 			return err
 		}
+		c.GardenConfig = gardenConfig
 		g, err := gardenConfig.GetGarden()
 		if err != nil {
 			return err

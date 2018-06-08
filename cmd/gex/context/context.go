@@ -9,6 +9,7 @@ import (
 type Context struct {
 	Name            string
 	GardenSetConfig gube.GardenSetConfig
+	GardenConfig    gube.GardenConfig
 	Garden          gube.CachedGarden
 }
 

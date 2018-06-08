@@ -112,7 +112,7 @@ func NewSelectOutput() *select_output {
 }
 
 func (this *select_output) Out(ctx *context.Context) error {
-	garden := ""
+	garden := ctx.Name
 	shoot := ""
 	seed := ""
 	project := ""

@@ -1,6 +1,8 @@
 package verb
 
 import (
+	"github.com/afritzler/garden-examiner/cmd/gex/const"
+
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 )
 
@@ -9,7 +11,9 @@ func init() {
 		CmdDescription("general get command",
 			"The first argument is the element type followed by",
 			"element names and/or options",
-		)
+		).
+		CatchUnknownCommand(catch_cluster).
+		ArgOption(constants.O_OUTPUT).Short('o')
 
 	NewVerb("kubeconfig", get).CmdArgDescription("<cluster type> ...").
 		CmdDescription("general kubeconfig get command",

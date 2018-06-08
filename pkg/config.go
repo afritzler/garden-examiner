@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/ghodss/yaml"
+	"github.com/mandelsoft/filepath/pkg/filepath"
 )
 
 type GardenSetConfig interface {
@@ -50,6 +51,7 @@ func ReadGardenSetConfig(path string) (*GardenSetConfigImpl, error) {
 	if err != nil {
 		return nil, err
 	}
+	config.SetPath(path)
 	return config, nil
 }
 
@@ -59,6 +61,15 @@ type GardenSetConfigImpl struct {
 	GithubURL string              `yaml:"githubURL,omitempty" json:"githubURL,omitempty"`
 	Gardens   []*GardenConfigImpl `yaml:"gardens,omitempty" json:"gardens,omitempty"`
 	Default   string              `yaml:"default,omitempty" json:"default,omitempty"`
+	path      string
+}
+
+func (this *GardenSetConfigImpl) SetPath(path string) {
+	this.path = path
+	dir := filepath.Dir2(path)
+	for _, g := range this.Gardens {
+		g.makeAbsolute(dir)
+	}
 }
 
 func (this *GardenSetConfigImpl) GetDefault() string {
@@ -109,6 +120,15 @@ type GardenConfigImpl struct {
 	lock           sync.Mutex
 	kubeconfig     []byte
 	garden         Garden
+	effectivePath  string
+}
+
+func (this *GardenConfigImpl) makeAbsolute(dir string) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
+	if !filepath.IsAbs(this.KubeConfigPath) {
+		this.effectivePath = filepath.Join(dir, this.KubeConfigPath)
+	}
 }
 
 func (this *GardenConfigImpl) GetName() string {
@@ -124,18 +144,18 @@ func (this *GardenConfigImpl) GetKubeconfig() ([]byte, error) {
 	defer this.lock.Unlock()
 	if this.kubeconfig == nil {
 		var cfg []byte
-		var err error
 
-		if this.garden == nil {
-			g, err := NewGardenFromConfigfile(this.KubeConfigPath)
-			if err != nil {
-				return nil, fmt.Errorf("cannot create garden object for %s", this.Name)
-			}
-			this.garden = g
+		g, err := this._getGarden()
+		if err != nil {
+			return nil, err
 		}
-		cfg, err = this.garden.GetKubeconfig()
+		cfg, err = g.GetKubeconfig()
 		if cfg == nil && this.KubeConfigPath != "" {
-			cfg, err = ioutil.ReadFile(this.KubeConfigPath)
+			path := this.effectivePath
+			if path == "" {
+				path = this.KubeConfigPath
+			}
+			cfg, err = ioutil.ReadFile(path)
 		}
 		if err != nil {
 			return nil, err
@@ -148,10 +168,18 @@ func (this *GardenConfigImpl) GetKubeconfig() ([]byte, error) {
 func (this *GardenConfigImpl) GetGarden() (Garden, error) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
+	return this._getGarden()
+}
+
+func (this *GardenConfigImpl) _getGarden() (Garden, error) {
 	if this.garden == nil {
-		g, err := NewGardenFromConfigfile(this.KubeConfigPath)
+		path := this.effectivePath
+		if path == "" {
+			path = this.KubeConfigPath
+		}
+		g, err := NewGardenFromConfigfile(path)
 		if err != nil {
-			return nil, fmt.Errorf("cannot create garden object for %s", this.Name)
+			return nil, fmt.Errorf("cannot create garden object for %s(%s)", this.Name, path)
 		}
 		this.garden = g
 	}

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 )
@@ -38,6 +39,9 @@ func (this *Filters) Match(ctx *context.Context, elem interface{}, opts *cmdint.
 func (this *Filters) AddOptions(cmd cmdint.ConfigurableCmdTabCommand) cmdint.ConfigurableCmdTabCommand {
 	for _, f := range this.filters {
 		cmd = f.AddOptions(cmd)
+	}
+	if len(this.filters) > 0 {
+		cmd.FlagOption(constants.O_NOFILTER).Description("ignore filters and selection")
 	}
 	return cmd
 }
