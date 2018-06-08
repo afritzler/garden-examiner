@@ -50,7 +50,7 @@ func terraform(opts *cmdint.Options) error {
 }
 
 func NewTerraformOutput(cm string, field string) output.Output {
-	return output.NewStringOutput(terraform_output_mapper(cm, field))
+	return output.NewStringOutput(terraform_output_mapper(cm, field), "---")
 }
 
 func terraform_output_mapper(job, data string) data.MappingFunction {

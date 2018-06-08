@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/output"
+
+	"github.com/afritzler/garden-examiner/pkg/data"
+
 	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
@@ -16,24 +20,30 @@ import (
 func init() {
 	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "register", register).
 		CmdDescription("run register for garden cluster").
-		CmdArgDescription("[check] [<email>]")).
-		FlagOption("check").Short('c').Description("check registration")
+		CmdArgDescription("[check]")).
+		FlagOption("check").Short('c').Description("check registration").
+		ArgOption("email").Short('e').Description("email address")
 }
 
 func register(opts *cmdint.Options) error {
 	ctx := context.Get(opts)
 	check := opts.IsFlag("check")
+	email := opts.GetOptionValue("email")
 	githubURL := ""
 	if ctx.GardenSetConfig != nil {
 		githubURL = ctx.GardenSetConfig.GetGithubURL()
 	}
-	switch len(opts.Arguments) {
-	case 0:
-		return register_garden(check, githubURL, ctx.Garden, "")
-	case 1:
-		return register_garden(check, githubURL, ctx.Garden, opts.Arguments[0])
-	default:
-		return fmt.Errorf("One optional email argument required")
+	if email == nil {
+		if githubURL == "" {
+			return fmt.Errorf("No email specified and no github url configured in gex config")
+		}
+		email := getEmail(githubURL)
+		if email == "null" {
+			return fmt.Errorf("Could not read github email address")
+		}
+		return cmdline.ExecuteOutput(opts, NewRegisterOutput(check, githubURL, email), TypeHandler)
+	} else {
+		return cmdline.ExecuteOutput(opts, NewRegisterOutput(check, githubURL, *email), TypeHandler)
 	}
 }
 
@@ -46,34 +56,43 @@ func getEmail(githubURL string) string {
 	return res
 }
 
-func register_garden(check bool, githubURL string, g gube.Garden, email string) error {
-	if email == "" {
-		email = getEmail(githubURL)
-		if email == "null" {
-			return fmt.Errorf("Could not read github email address")
-		}
-	}
+func register_garden(check bool, githubURL string, g gube.Garden, email string) (string, error) {
 	kubeset, err := g.GetClientset()
 	if err != nil {
-		return fmt.Errorf("failed to get garden clientset: %s", err)
+		return "", fmt.Errorf("failed to get garden clientset: %s", err)
 	}
 	clusterRoleBinding, err := kubeset.RbacV1().ClusterRoleBindings().Get("garden-administrators", metav1.GetOptions{})
 	if err != nil {
-		return err
+		return "", err
 	}
 	for _, subject := range clusterRoleBinding.Subjects {
 		if subject.Kind == "User" && subject.Name == email {
-			if check {
-				fmt.Printf("user '%s' already registered\n", email)
-			}
-			return nil
+			return fmt.Sprintf("user '%s' already registered", email), nil
 		}
 	}
 	if check {
-		fmt.Printf("user '%s' not registed\n", email)
-		return nil
+		return fmt.Sprintf("user '%s' not registed", email), nil
 	}
 	clusterRoleBinding.Subjects = append(clusterRoleBinding.Subjects, rbacv1.Subject{Kind: "User", Name: email})
 	_, err = kubeset.RbacV1().ClusterRoleBindings().Update(clusterRoleBinding)
-	return err
+	return fmt.Sprintf("user '%s' registed", email), err
+}
+
+func createRegisterMapper(check bool, githubURL, email string) data.MappingFunction {
+	return func(e interface{}) interface{} {
+		cfg := e.(gube.GardenConfig)
+		g, err := cfg.GetGarden()
+		if err != nil {
+			return err
+		}
+		s, err := register_garden(check, githubURL, g, email)
+		if err != nil {
+			return fmt.Errorf("%s: %s", cfg.GetName(), err)
+		}
+		return fmt.Sprintf("%s: %s", cfg.GetName(), s)
+	}
+}
+
+func NewRegisterOutput(check bool, githubURL, email string) output.Output {
+	return output.NewStringOutput(createRegisterMapper(check, githubURL, email), "")
 }

@@ -11,7 +11,7 @@ func KubeconfigOutputFactory(opts *cmdint.Options) Output {
 }
 
 func NewKubeconfigOutput() Output {
-	return NewStringOutput(map_kubeconfig_output)
+	return NewStringOutput(map_kubeconfig_output, "---")
 }
 
 func map_kubeconfig_output(e interface{}) interface{} {
