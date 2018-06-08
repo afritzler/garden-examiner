@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "register", register).Raw().
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "register", register).
 		CmdDescription("run register for garden cluster").
 		CmdArgDescription("[check] [<email>]")).
 		FlagOption("check").Short('c').Description("check registration")

@@ -51,7 +51,7 @@ type shoot struct {
 	namespace string
 	manifest  v1beta1.Shoot
 	project   Project
-	lock      *sync.Mutex
+	lock      sync.Mutex
 }
 
 var _ Shoot = &shoot{}
