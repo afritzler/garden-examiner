@@ -23,6 +23,7 @@ type Shoot interface {
 	GetBasicAuth() (user, password string, err error)
 	GetCloudProviderConfig() (map[string]string, error)
 	GetConfigMapEntriesFromSeed(name string) (map[string]string, error)
+	GetTerraformJobData(job string, data string) (string, error)
 	GetIngressFromSeed(name string) (*extv1beta1.Ingress, error)
 	GetIngressHostFromSeed(name string) (string, error)
 	GetInfrastructure() string
@@ -245,6 +246,37 @@ func (s *shoot) GetSecretContentFromSeed(name string) (map[string]string, error)
 		config[k] = string(v)
 	}
 	return config, nil
+}
+
+func (s *shoot) GetTerraformJobData(job string, data string) (string, error) {
+	switch job {
+	case "infra":
+	case "external-dns":
+	case "internal-dns":
+	case "ingress":
+	default:
+		return "", fmt.Errorf("invalid job '%s', select one of infra, external-dns, internal-dns, ingress", job)
+	}
+	cm := ""
+	field := ""
+	switch data {
+	case "state":
+		cm = "state"
+		field = "terraform.tfstate"
+	case "config":
+		cm = "config"
+		field = "variables.tf"
+	case "script":
+		cm = "config"
+		field = "main.tf"
+	default:
+		return "", fmt.Errorf("invalid data '%s', select one of: state, config, script")
+	}
+	entries, err := s.GetConfigMapEntriesFromSeed(fmt.Sprintf("%s.%s.tf-%s", s.GetName().GetName(), job, cm))
+	if err != nil {
+		return "", err
+	}
+	return entries[field], nil
 }
 
 func (s *shoot) GetConfigMapEntriesFromSeed(name string) (map[string]string, error) {
