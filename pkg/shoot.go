@@ -12,7 +12,7 @@ import (
 
 type Shoot interface {
 	GetName() *ShootName
-	GetNamespaceInSeed() (string, error)
+	GetNamespaceInSeed() string
 	GetManifest() *v1beta1.Shoot
 	GetDomainName() string
 	GetSeedName() string
@@ -86,15 +86,8 @@ func (s *shoot) GetShootName() *ShootName {
 	return s.GetName()
 }
 
-func (s *shoot) GetNamespaceInSeed() (string, error) {
-	if s.seednamespace == "" {
-		p, err := s.GetProject()
-		if err != nil {
-			return "", fmt.Errorf("cannot get namespace for shoot '%s': %s", s.name, err)
-		}
-		s.seednamespace = fmt.Sprintf("shoot-%s-%s", p.GetName(), s.GetName().GetName())
-	}
-	return s.seednamespace, nil
+func (s *shoot) GetNamespaceInSeed() string {
+	return s.manifest.Status.TechnicalID
 }
 
 func (s *shoot) GetNamespace() (string, error) {
@@ -238,10 +231,7 @@ func (s *shoot) GetBasicAuth() (user, password string, err error) {
 }
 
 func (s *shoot) GetSecretContentFromSeed(name string) (map[string]string, error) {
-	ns, err := s.GetNamespaceInSeed()
-	if err != nil {
-		return nil, err
-	}
+	ns := s.GetNamespaceInSeed()
 	seed, err := s.GetSeed()
 	if err != nil {
 		return nil, err
@@ -289,10 +279,7 @@ func (s *shoot) GetTerraformJobData(job string, data string) (string, error) {
 }
 
 func (s *shoot) GetConfigMapEntriesFromSeed(name string) (map[string]string, error) {
-	ns, err := s.GetNamespaceInSeed()
-	if err != nil {
-		return nil, err
-	}
+	ns := s.GetNamespaceInSeed()
 	seed, err := s.GetSeed()
 	if err != nil {
 		return nil, err
@@ -301,10 +288,7 @@ func (s *shoot) GetConfigMapEntriesFromSeed(name string) (map[string]string, err
 }
 
 func (s *shoot) GetIngressFromSeed(name string) (*extv1beta1.Ingress, error) {
-	ns, err := s.GetNamespaceInSeed()
-	if err != nil {
-		return nil, err
-	}
+	ns := s.GetNamespaceInSeed()
 	seed, err := s.GetSeed()
 	if err != nil {
 		return nil, err

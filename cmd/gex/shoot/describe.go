@@ -50,8 +50,7 @@ func Describe(s gube.Shoot) error {
 	attrs.Attribute("Shoot", s.GetName().GetName())
 	attrs.Attribute("Project", s.GetName().GetProjectName())
 	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
-	seed, _ := s.GetNamespaceInSeed()
-	attrs.Attribute("Seed Namespace", seed)
+	attrs.Attribute("Seed Namespace", s.GetNamespaceInSeed())
 	attrs.Attributef("API Server", "api.%s", s.GetDomainName())
 	host, err := s.GetIngressHostFromSeed("alertmanager")
 	if err == nil {

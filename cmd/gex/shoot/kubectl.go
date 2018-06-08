@@ -18,10 +18,7 @@ func init() {
 }
 
 func seed_kubectl_mapper(ctx *context.Context, e interface{}) (interface{}, []string, error) {
-	ns, err := e.(gube.Shoot).GetNamespaceInSeed()
-	if err != nil {
-		return nil, nil, err
-	}
+	ns := e.(gube.Shoot).GetNamespaceInSeed()
 	seed, _, err := seed_mapper(ctx, e)
 	return seed, []string{"-n", ns}, err
 
