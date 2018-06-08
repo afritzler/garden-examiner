@@ -35,7 +35,6 @@
   revision = "bc6354cbbc295e925e4c611ffe90c1f287ee54db"
 
 [[projects]]
-  branch = "master"
   name = "github.com/gardener/gardener"
   packages = [
     "pkg/apis/garden",
@@ -54,7 +53,8 @@
     "pkg/operation/common",
     "pkg/utils"
   ]
-  revision = "2371b2f773a80017df57949cc3472f087b0eff47"
+  revision = "f7e7570d56b0eb647c05c0a227a2a84fac57f408"
+  version = "0.5.1"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -393,8 +393,8 @@
     "util/homedir",
     "util/integer"
   ]
-  revision = "989be4278f353e42f26c416c53757d16fcff77db"
-  version = "kubernetes-1.10.1"
+  revision = "29ae1f00c3d8bb759d6246c357573a9af3c659c1"
+  version = "kubernetes-1.10.3"
 
 [[projects]]
   name = "k8s.io/helm"
@@ -414,6 +414,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0fafb3bd9a43f98e7b2e870e5aef87b1d1f12e20d2111563af508447a23d6b47"
+  inputs-digest = "a7e83decbfed58a3ebf6187353ac224b7ee6a1e4a06a80d3d9bef3a1388e4d16"
   solver-name = "gps-cdcl"
   solver-version = 1
