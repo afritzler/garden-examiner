@@ -2,6 +2,7 @@ package gube
 
 import (
 	"fmt"
+	"sync"
 
 	. "github.com/afritzler/garden-examiner/pkg/data"
 	v1beta1 "github.com/gardener/gardener/pkg/apis/garden/v1beta1"
@@ -46,10 +47,11 @@ type Shoot interface {
 type shoot struct {
 	_GardenObject
 	cluster
-	name          *ShootName
-	namespace     string
-	seednamespace string
-	manifest      v1beta1.Shoot
+	name      *ShootName
+	namespace string
+	manifest  v1beta1.Shoot
+	project   Project
+	lock      *sync.Mutex
 }
 
 var _ Shoot = &shoot{}
@@ -91,6 +93,8 @@ func (s *shoot) GetNamespaceInSeed() string {
 }
 
 func (s *shoot) GetNamespace() (string, error) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	if s.namespace == "" {
 		p, err := s.GetProject()
 		if err != nil {
@@ -123,7 +127,16 @@ func (s *shoot) GetSeed() (Seed, error) {
 }
 
 func (s *shoot) GetProject() (Project, error) {
-	return s.garden.GetProject(s.name.GetProjectName())
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	if s.project == nil {
+		p, err := s.garden.GetProject(s.name.GetProjectName())
+		if err != nil {
+			return nil, err
+		}
+		s.project = p
+	}
+	return s.project, nil
 }
 
 func (s *shoot) GetState() string {
@@ -383,13 +396,13 @@ func NewShootCacher(g Garden) Cacher {
 }
 
 func (this *ShootCacher) GetAll() (Iterator, error) {
-	fmt.Printf("cacher get all shoots\n")
+	//fmt.Printf("cacher get all shoots\n")
 	elems, err := this.garden.GetShoots()
 	if err != nil {
-		fmt.Printf("cacher got error %s\n", err)
+		//fmt.Printf("cacher got error %s\n", err)
 		return nil, err
 	}
-	fmt.Printf("cacher got %d shoots\n", len(elems))
+	//fmt.Printf("cacher got %d shoots\n", len(elems))
 	a := []interface{}{}
 	for _, v := range elems {
 		a = append(a, v)

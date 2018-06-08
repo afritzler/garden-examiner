@@ -14,7 +14,17 @@ import (
 
 func init() {
 	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "terraform", terraform).
-		CmdDescription("get terraform data for shoot").
+		CmdDescription("get terraform data for shoot",
+			"Terraform data is available for the following jobs (--job):",
+			"  - infra:       infrastructure setup (default)",
+			"  - external-dns: setup of external DNS entries",
+			"  - internal-dns: setup of DNS entries for internal IP addresses",
+			"  - ingress:      setup of ingress resources on IaaS layer",
+			"",
+			"For every job the following information is available (--data):",
+			"  - config: configuration values",
+			"  - script: the terraform script",
+			"  - state:  the terraform state (default)").
 		CmdArgDescription("[<shoot>]")).
 		ArgOption("job").Short('j').Default("infra").
 		ArgOption("data").Short('d').Default("state")

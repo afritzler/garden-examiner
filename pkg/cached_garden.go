@@ -13,6 +13,7 @@ type CachedGarden interface {
 
 type cached_garden struct {
 	Garden
+	projects ProjectCache
 	profiles ProfileCache
 	shoots   ShootCache
 }
@@ -25,14 +26,29 @@ func NewCachedGarden(g Garden) CachedGarden {
 
 func (this *cached_garden) new(g Garden) CachedGarden {
 	this.Garden = g.NewWrapper(this)
+	this.projects = NewProjectCache(this.Garden)
 	this.profiles = NewProfileCache(this.Garden)
 	this.shoots = NewShootCache(this.Garden)
 	return this
 }
 
 func (this *cached_garden) Reset() {
+	this.projects.Reset()
 	this.profiles.Reset()
 	this.shoots.Reset()
+}
+
+func (this *cached_garden) GetProject(name string) (Project, error) {
+	//fmt.Printf("GET CACHED  %s\n", name)
+	return this.projects.GetProject(name)
+}
+
+func (this *cached_garden) GetProjects() (map[string]Project, error) {
+	return this.projects.GetProjects()
+}
+
+func (this *cached_garden) GetProjectByNamespace(namespace string) (Project, error) {
+	return this.projects.GetProjectByNamespace(namespace)
 }
 
 func (this *cached_garden) GetProfile(name string) (Profile, error) {

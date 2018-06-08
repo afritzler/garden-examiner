@@ -12,7 +12,7 @@ import (
 
 func init() {
 	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription("get profile(s)").
-		CmdArgDescription("[<profile>]")).
+		CmdArgDescription("[<profile>]").Mixed()).
 		ArgOption(constants.O_OUTPUT).Short('o')
 }
 

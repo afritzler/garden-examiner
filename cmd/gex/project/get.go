@@ -11,8 +11,9 @@ import (
 )
 
 func init() {
-	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription("get projects(s)").
-		CmdArgDescription("[<project>]")).
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).
+		CmdDescription("get projects(s)").
+		CmdArgDescription("[<project>]").Mixed()).
 		ArgOption(constants.O_OUTPUT).Short('o').
 		ArgOption(constants.O_SORT).Array()
 }

@@ -14,7 +14,9 @@ import (
 )
 
 func init() {
-	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription("get seed(s)").CmdArgDescription("[<seed>]")).
+	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).
+		CmdDescription("get seed(s)").
+		CmdArgDescription("[<seed>]").Mixed()).
 		ArgOption(constants.O_OUTPUT).Short('o').
 		ArgOption(constants.O_SORT).Array()
 }

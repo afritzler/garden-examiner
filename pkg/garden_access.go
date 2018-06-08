@@ -64,6 +64,7 @@ func (this *garden_access) GetShoots(eff Garden) (map[ShootName]Shoot, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get shoots: %s", err)
 	}
+	fmt.Printf("filling map\n")
 	result := map[ShootName]Shoot{}
 	for _, s := range shoots.Items {
 		shoot, err := NewShootFromShootManifest(eff, s)

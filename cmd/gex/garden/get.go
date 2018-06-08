@@ -14,7 +14,7 @@ import (
 
 func init() {
 	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "get", get).CmdDescription("get configured garden(s)").
-		CmdArgDescription("[<garden>]")).
+		CmdArgDescription("[<garden>]").Mixed()).
 		ArgOption(constants.O_OUTPUT).Short('o')
 }
 

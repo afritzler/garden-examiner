@@ -22,7 +22,7 @@ func init() {
 		"- kubeconfig      print kube config",
 		"- error           show complete error message",
 	).
-		CmdArgDescription("[<shoot>]")).
+		CmdArgDescription("[<shoot>]").Mixed()).
 		ArgOption(constants.O_OUTPUT).Short('o').
 		ArgOption(constants.O_SORT).Array()
 }

@@ -18,6 +18,14 @@ type Cache interface {
 	Reset()
 }
 
+type UnsyncedCache interface {
+	Cache
+	Lock()
+	Unlock()
+	NotSynced_GetAll() (Iterator, error)
+	NotSynced_Get(key interface{}) (interface{}, error)
+}
+
 type _Cache struct {
 	lock     sync.Mutex
 	cacher   Cacher
@@ -25,12 +33,21 @@ type _Cache struct {
 	complete bool
 }
 
+var _ UnsyncedCache = &_Cache{}
+
 func NewCache(c Cacher) Cache {
 	return &_Cache{cacher: c, entries: nil, complete: false}
 }
 
 func (this *_Cache) Key(e interface{}) interface{} {
 	return this.cacher.Key(e)
+}
+
+func (this *_Cache) Lock() {
+	this.lock.Lock()
+}
+func (this *_Cache) Unlock() {
+	this.lock.Unlock()
 }
 
 func (this *_Cache) Reset() {
@@ -43,7 +60,10 @@ func (this *_Cache) Reset() {
 func (this *_Cache) GetAll() (Iterator, error) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
+	return this.NotSynced_GetAll()
+}
 
+func (this *_Cache) NotSynced_GetAll() (Iterator, error) {
 	if this.entries == nil || !this.complete {
 		elems, err := this.cacher.GetAll()
 		if err != nil {
@@ -64,7 +84,10 @@ func (this *_Cache) GetAll() (Iterator, error) {
 func (this *_Cache) Get(key interface{}) (interface{}, error) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
+	return this.NotSynced_Get(key)
+}
 
+func (this *_Cache) NotSynced_Get(key interface{}) (interface{}, error) {
 	var p interface{} = nil
 	if this.entries != nil {
 		p = this.entries[key]
