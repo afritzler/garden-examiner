@@ -163,6 +163,12 @@
   revision = "68efeb83f9bc7bfe70085d5077bc32ee649bc30d"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mandelsoft/filepath"
+  packages = ["pkg/filepath"]
+  revision = "e79b4e7be206381a8a4c0d0cc762e2717d74d7a7"
+
+[[projects]]
   name = "github.com/modern-go/concurrent"
   packages = ["."]
   revision = "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94"
@@ -414,6 +420,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f669f8df8e813ecd1321614913548431c2610a3133647a0bdf56f25bf509079c"
+  inputs-digest = "b5bb3efde6a8cb4a9269901be0900bc423b5dfa05aa09976cda8212007203d8d"
   solver-name = "gps-cdcl"
   solver-version = 1

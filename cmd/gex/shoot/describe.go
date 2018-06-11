@@ -51,26 +51,24 @@ func Describe(s gube.Shoot) error {
 	attrs.Attribute("Project", s.GetName().GetProjectName())
 	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
 	attrs.Attribute("Seed Namespace", s.GetNamespaceInSeed())
-	attrs.Attributef("API Server", "api.%s", s.GetDomainName())
+	attrs.Attributef("API Server", "https://api.%s", s.GetDomainName())
 	host, err := s.GetIngressHostFromSeed("alertmanager")
 	if err == nil {
-		attrs.Attribute("Alert Manager", host)
+		attrs.Attribute("Alert Manager", "https://"+host)
 	}
 	host, err = s.GetIngressHostFromSeed("grafana")
 	if err == nil {
-		attrs.Attribute("Grafana", host)
+		attrs.Attribute("Grafana", "https://"+host)
 	}
 	host, err = s.GetIngressHostFromSeed("prometheus")
 	if err == nil {
-		attrs.Attribute("Prometheus", host)
+		attrs.Attribute("Prometheus", "https://"+host)
 	}
 	user, pass, err := s.GetBasicAuth()
 	if err != nil {
 		attrs.Attributef("Basic Auth", "%s", err)
-
 	} else {
 		attrs.Attributef("Basic Auth", "%s (%s)", user, pass)
-
 	}
 	cnt := "unknown"
 	c, err := s.GetNodeCount()
