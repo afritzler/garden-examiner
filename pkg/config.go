@@ -7,6 +7,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/mandelsoft/filepath/pkg/filepath"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type GardenSetConfig interface {
@@ -21,6 +23,7 @@ type GardenConfig interface {
 	GetName() string
 	GetDescription() string
 	GetGarden() (Garden, error)
+	GetRuntimeObject() runtime.Object
 	KubeconfigProvider
 }
 
@@ -184,4 +187,19 @@ func (this *GardenConfigImpl) _getGarden() (Garden, error) {
 		this.garden = g
 	}
 	return this.garden, nil
+}
+
+type gardenObject struct {
+	GardenConfigImpl
+}
+
+func (this *gardenObject) GetObjectKind() schema.ObjectKind {
+	return nil
+}
+func (this *gardenObject) DeepCopyObject() runtime.Object {
+	return nil
+}
+
+func (g *GardenConfigImpl) GetRuntimeObject() runtime.Object {
+	return &gardenObject{}
 }
