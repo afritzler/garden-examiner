@@ -190,7 +190,7 @@ func (this *GardenConfigImpl) _getGarden() (Garden, error) {
 }
 
 type gardenObject struct {
-	GardenConfigImpl
+	*GardenConfigImpl `json:",inline"`
 }
 
 func (this *gardenObject) GetObjectKind() schema.ObjectKind {
@@ -201,5 +201,5 @@ func (this *gardenObject) DeepCopyObject() runtime.Object {
 }
 
 func (g *GardenConfigImpl) GetRuntimeObject() runtime.Object {
-	return &gardenObject{}
+	return &gardenObject{g}
 }
