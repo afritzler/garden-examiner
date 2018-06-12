@@ -38,14 +38,19 @@ func FormatTable(gap string, data [][]string) {
 
 	if len(columns) <= 3 && max > 100 {
 		first := []string{}
+		setSep := false
 		for i, row := range data {
 			if i == 0 {
 				first = row
 			} else {
 				for c, col := range row {
 					fmt.Printf("%s%s: %s\n", gap, first[c], col)
+					setSep = true
 				}
-				fmt.Printf("---\n")
+				if setSep == true {
+					fmt.Printf("---\n")
+					setSep = false
+				}
 			}
 		}
 	} else {

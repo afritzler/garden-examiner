@@ -78,5 +78,9 @@ func map_get_wide_output(e interface{}) interface{} {
 
 func map_get_error_output(e interface{}) interface{} {
 	s := e.(gube.Shoot)
-	return []string{s.GetName().GetName(), s.GetError()}
+	if s.GetError() != "" {
+		return []string{s.GetName().GetName(), s.GetError()}
+	} else {
+		return []string{}
+	}
 }
