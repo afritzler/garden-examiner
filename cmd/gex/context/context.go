@@ -7,6 +7,9 @@ import (
 )
 
 type Context struct {
+	ByKubeconfig    bool
+	Configpath      string
+	Gexdir          string
 	Name            string
 	GardenSetConfig gube.GardenSetConfig
 	GardenConfig    gube.GardenConfig

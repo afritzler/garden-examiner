@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/user"
 
 	_ "github.com/afritzler/garden-examiner/cmd/gex/profile"
 	_ "github.com/afritzler/garden-examiner/cmd/gex/project"
@@ -14,13 +16,21 @@ import (
 	"github.com/afritzler/garden-examiner/cmd/gex/const"
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
 	"github.com/afritzler/garden-examiner/pkg"
+	"github.com/afritzler/garden-examiner/pkg/data"
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
+	"github.com/mandelsoft/filepath/pkg/filepath"
 	_ "k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
+	usr, err := user.Current()
+	gexdir := ""
+	if err == nil {
+		gexdir = filepath.Join(usr.HomeDir, ".gex")
+	}
 	cmdint.MainTab().CmdDescription("garden examiner").CmdArgDescription("<options> <command> <options>").
 		SetupFunction(setup).
+		ArgOption(constants.O_GEXDIR).Env("GEXDIR").Default(gexdir).
 		ArgOption(constants.O_GEXCONFIG).Env("GEXCONFIG").
 		ArgOption(constants.O_KUBECONFIG).Env("KUBECONFIG").
 		ArgOption(constants.O_SEL_SHOOT).Env("GEX_SHOOT").
@@ -34,8 +44,16 @@ func main() {
 func setup(opts *cmdint.Options) error {
 	c := &context.Context{}
 	opts.Context = c
+
+	c.Gexdir = *opts.GetOptionValue(constants.O_GEXDIR)
 	gexconfig := opts.GetOptionValue(constants.O_GEXCONFIG)
-	if gexconfig != nil {
+	if data.IsEmpty(gexconfig) && !data.IsEmpty(c.Gexdir) {
+		cfg := filepath.Join(c.Gexdir, "config")
+		if _, err := os.Stat(cfg); !os.IsNotExist(err) {
+			gexconfig = &cfg
+		}
+	}
+	if !data.IsEmpty(gexconfig) {
 		cfg, err := gube.NewGardenSetConfig(*gexconfig)
 		if err != nil {
 			return err
@@ -61,9 +79,10 @@ func setup(opts *cmdint.Options) error {
 		c.Garden = gube.NewCachedGarden(g)
 	} else {
 		configfile := opts.GetOptionValue(constants.O_KUBECONFIG)
-		if configfile == nil || *configfile == "" {
-			return fmt.Errorf("no kubeconfig specified")
+		if data.IsEmpty(configfile) {
+			return fmt.Errorf("no kubeconfig or gexconfig specified")
 		}
+		c.ByKubeconfig = true
 		fmt.Printf("kubeconfig is %s\n", *configfile)
 		//config, err := clientcmd.BuildConfigFromFlags("", *configfile)
 		//if err != nil {

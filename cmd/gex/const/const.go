@@ -3,6 +3,7 @@ package constants
 const (
 	O_KUBECONFIG = "kubeconfig"
 	O_GEXCONFIG  = "gexconfig"
+	O_GEXDIR     = "gexdir"
 
 	O_SEL_PROJECT = "selected-project"
 	O_SEL_SHOOT   = "selected-shoot"
@@ -15,6 +16,9 @@ const (
 	O_GARDEN  = "garden"
 	O_INFRA   = "infra"
 	O_PROFILE = "profile"
+
+	O_EXPORT   = "export"
+	O_DOWNLOAD = "download"
 
 	O_NOFILTER = "nofilter"
 

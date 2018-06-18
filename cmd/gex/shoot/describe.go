@@ -49,6 +49,10 @@ func Describe(s gube.Shoot) error {
 	attrs := util.NewAttributeSet()
 	attrs.Attribute("Shoot", s.GetName().GetName())
 	attrs.Attribute("Project", s.GetName().GetProjectName())
+	p, err := s.GetProject()
+	if err == nil {
+		attrs.Attribute("Namespace", p.GetNamespace())
+	}
 	attrs.Attributef("Profile", "%s (%s)", s.GetProfileName(), s.GetInfrastructure())
 	attrs.Attribute("Seed Namespace", s.GetNamespaceInSeed())
 	attrs.Attributef("API Server", "https://api.%s", s.GetDomainName())

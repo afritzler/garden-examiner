@@ -21,7 +21,7 @@ func init() {
 			"element names and/or options",
 		)
 
-	NewVerb("iaas", cmdint.MainTab()).CmdArgDescription("<type> ...").
+	NewVerb("iaas", cmdint.MainTab()).CmdArgDescription("<type> ...").Raw().
 		CmdDescription("general iaas command",
 			"The first argument is the element type followed by",
 			"element name option and/or iaas arguments/options.",

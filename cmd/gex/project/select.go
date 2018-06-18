@@ -14,5 +14,5 @@ func init() {
 }
 
 func cmd_select(opts *cmdint.Options) error {
-	return cmdline.ExecuteOutput(opts, verb.NewSelectOutput(), TypeHandler)
+	return cmdline.ExecuteOutput(opts, verb.NewSelectOutput(false, false), TypeHandler)
 }
