@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/afritzler/garden-examiner/cmd/gex/env"
 	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
 )
@@ -30,6 +31,30 @@ func (this *openstack) Execute(shoot gube.Shoot, config map[string]string, args 
 	if err != nil {
 		return fmt.Errorf("cannot execute 'openstack': %s", err)
 	}
+	return nil
+}
+
+func (this *openstack) Export(shoot gube.Shoot, config map[string]string, cachedir string) error {
+	info, err := shoot.GetIaaSInfo()
+	if err != nil {
+		return err
+	}
+	authURL := info.(*gube.OpenstackInfo).GetAuthURL()
+	if authURL == "" {
+		fmt.Println("Fetching authURL was not successful")
+		return nil
+	}
+	fmt.Printf("exporting Openstack CLI config for %s\n", shoot.GetName())
+	env.Set("OS_IDENTITY_API_VERSION", "3")
+	env.Set("OS_AUTH_VERSION", "3")
+	env.Set("OS_AUTH_STRATEGY", "keystone")
+	env.Set("OS_AUTH_URL", authURL)
+	env.Set("OS_TENANT_NAME", string(config["tenantName"]))
+	env.Set("OS_PROJECT_DOMAIN_NAME", string(config["domainName"]))
+	env.Set("OS_USER_DOMAIN_NAME", string(config["domainName"]))
+	env.Set("OS_USERNAME", string(config["username"]))
+	env.Set("OS_PASSWORD,", string(config["password"]))
+	env.Set("OS_REGION_NAME", string(config["region"]))
 	return nil
 }
 

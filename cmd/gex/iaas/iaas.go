@@ -10,6 +10,7 @@ var IaasHandlers = map[string]IaasHandler{}
 
 type IaasHandler interface {
 	Execute(shoot gube.Shoot, config map[string]string, args ...string) error
+	Export(shoot gube.Shoot, config map[string]string, cachedir string) error
 	Describe(shoot gube.Shoot) error
 }
 

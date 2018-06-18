@@ -75,17 +75,17 @@ func cmd_select(opts *cmdint.Options) error {
 				if err != nil {
 					return err
 				}
-				return Download(ctx.ByKubeconfig, export, s, ctx.Gexdir, ctx.Name, "projects", a[0], a[1])
+				return Download(ctx.ByKubeconfig, export, s, ctx.CacheDirForShoot(s))
 			} else {
 				if !data.IsEmpty(sep) {
 					s, err := ctx.Garden.GetSeed(*sep)
 					if err != nil {
 						return err
 					}
-					return Download(ctx.ByKubeconfig, export, s, ctx.Gexdir, ctx.Name, "seeds", *sep)
+					return Download(ctx.ByKubeconfig, export, s, ctx.CacheDirForSeed(s))
 				} else {
 					if !data.IsEmpty(gap) && data.IsEmpty(prp) {
-						return Download(ctx.ByKubeconfig, export, ctx.Garden, ctx.Gexdir, ctx.Name)
+						return Download(ctx.ByKubeconfig, export, ctx.Garden, ctx.CacheDirForGarden())
 					}
 				}
 			}
@@ -166,19 +166,19 @@ func (this *select_output) Out(ctx *context.Context) error {
 	case gube.GardenConfig:
 		garden = e.GetName()
 		if this.download {
-			Download(ctx.ByKubeconfig, this.export, e, ctx.Gexdir, garden)
+			Download(ctx.ByKubeconfig, this.export, e, ctx.CacheDirForGarden())
 		}
 	case gube.Shoot:
 		shoot = e.GetName().String()
 		project = e.GetName().GetProjectName()
 		seed = e.GetSeedName()
 		if this.download {
-			err = Download(ctx.ByKubeconfig, this.export, e, ctx.Gexdir, garden, "projects", project, shoot)
+			err = Download(ctx.ByKubeconfig, this.export, e, ctx.CacheDirForShoot(e))
 		}
 	case gube.Seed:
 		seed = e.GetName()
 		if this.download {
-			err = Download(ctx.ByKubeconfig, this.export, e, ctx.Gexdir, garden, "seeds", seed)
+			err = Download(ctx.ByKubeconfig, this.export, e, ctx.CacheDirForSeed(e))
 		}
 	case gube.Project:
 		project = e.GetName()

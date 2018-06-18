@@ -10,14 +10,20 @@ import (
 
 type IaasOutput struct {
 	*SingleElementOutput
-	mapper ElementMapper
-	args   []string
+	mapper   ElementMapper
+	args     []string
+	cachedir func(interface{}) string
+	export   bool
 }
 
 var _ Output = &IaasOutput{}
 
 func NewIaasOutput(args []string, mapper ElementMapper) *IaasOutput {
-	return &IaasOutput{NewSingleElementOutput(), mapper, args}
+	return &IaasOutput{NewSingleElementOutput(), mapper, args, nil, false}
+}
+
+func NewIaasExportOutput(args []string, mapper ElementMapper, cachedir func(interface{}) string) *IaasOutput {
+	return &IaasOutput{NewSingleElementOutput(), mapper, args, cachedir, true}
 }
 
 func (this *IaasOutput) Close(ctx *context.Context) error {
@@ -55,6 +61,9 @@ func (this *IaasOutput) Iaas(input []byte, args ...string) error {
 	config, err := shoot.GetCloudProviderConfig()
 	if err != nil {
 		return err
+	}
+	if this.export {
+		return h.Export(shoot, config, this.cachedir(shoot))
 	}
 	return h.Execute(shoot, config, args...)
 }

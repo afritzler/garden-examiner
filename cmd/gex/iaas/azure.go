@@ -27,6 +27,10 @@ func (this *azure) Execute(shoot gube.Shoot, config map[string]string, args ...s
 	return nil
 }
 
+func (this *azure) Export(shoot gube.Shoot, config map[string]string, cachedir string) error {
+	return fmt.Errorf("no possible for Azure")
+}
+
 func (this *azure) Describe(shoot gube.Shoot) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
