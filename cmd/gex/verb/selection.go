@@ -10,11 +10,11 @@ import (
 
 func catch_cluster(cmdtab cmdint.CmdTab, opts *cmdint.Options) error {
 	//fmt.Printf("catching %v\n", opts.Arguments)
-	shoot := opts.GetOptionValue(constants.O_SEL_SHOOT)
+	shoot := opts.LookupOptionValue(constants.O_SEL_SHOOT)
 	if shoot != nil && *shoot != "" {
 		return cmdtab.Execute(opts, append([]string{"shoot"}, opts.Arguments...))
 	}
-	seed := opts.GetOptionValue(constants.O_SEL_SEED)
+	seed := opts.LookupOptionValue(constants.O_SEL_SEED)
 	if seed != nil && *seed != "" {
 		return cmdtab.Execute(opts, append([]string{"seed"}, opts.Arguments...))
 	}

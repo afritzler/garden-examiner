@@ -39,7 +39,7 @@ type _TypeHandler struct {
 var TypeHandler cmdline.ElementTypeHandler = &_TypeHandler{}
 
 func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
-	shoot := opts.GetOptionValue(constants.O_SEL_PROJECT)
+	shoot := opts.LookupOptionValue(constants.O_SEL_PROJECT)
 	return shoot
 }
 

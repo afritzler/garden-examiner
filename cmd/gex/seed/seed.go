@@ -37,7 +37,7 @@ type _TypeHandler struct {
 var TypeHandler = &_TypeHandler{}
 
 func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
-	return opts.GetOptionValue(constants.O_SEL_SEED)
+	return opts.LookupOptionValue(constants.O_SEL_SEED)
 }
 
 func (this *_TypeHandler) GetAll(ctx *context.Context, opts *cmdint.Options) ([]interface{}, error) {

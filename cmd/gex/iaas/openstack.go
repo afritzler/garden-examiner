@@ -26,7 +26,7 @@ func (this *openstack) Execute(shoot gube.Shoot, config map[string]string, args 
 		fmt.Println("Fetching authURL was not successful")
 		return nil
 	}
-	err = util.ExecCmd("openstack "+strings.Join(args, " "), "OS_IDENTITY_API_VERSION=3", "OS_AUTH_VERSION=3", "OS_AUTH_STRATEGY=keystone", "OS_AUTH_URL="+authURL, "OS_TENANT_NAME="+string(config["tenantName"]),
+	err = util.ExecCmd("openstack "+strings.Join(args, " "), nil, "OS_IDENTITY_API_VERSION=3", "OS_AUTH_VERSION=3", "OS_AUTH_STRATEGY=keystone", "OS_AUTH_URL="+authURL, "OS_TENANT_NAME="+string(config["tenantName"]),
 		"OS_PROJECT_DOMAIN_NAME="+string(config["domainName"]), "OS_USER_DOMAIN_NAME="+string(config["domainName"]), "OS_USERNAME="+string(config["username"]), "OS_PASSWORD="+string(config["password"]), "OS_REGION_NAME="+string(config["region"]))
 	if err != nil {
 		return fmt.Errorf("cannot execute 'openstack': %s", err)
@@ -58,19 +58,21 @@ func (this *openstack) Export(shoot gube.Shoot, config map[string]string, cached
 	return nil
 }
 
-func (this *openstack) Describe(shoot gube.Shoot) error {
+func (this *openstack) Describe(shoot gube.Shoot, attrs *util.AttributeSet) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
 		iaas := info.(*gube.OpenstackInfo)
-		attrs := util.NewAttributeSet()
-		fmt.Printf("Openstack Information:\n")
+		attrs.Attribute("Openstack Information", "")
 		attrs.Attribute("Keystone URL", iaas.GetAuthURL())
+		attrs.Attribute("Domain Name", iaas.GetDomainName())
+		attrs.Attribute("Tenant Name", iaas.GetTenantName())
+		attrs.Attribute("Username", iaas.GetUserName())
+		attrs.Attribute("Password", iaas.GetPassword())
 		attrs.Attribute("Region", iaas.GetRegion())
 		attrs.Attribute("Router Id", iaas.GetRouterId())
 		attrs.Attribute("Network Id", iaas.GetNetworkId())
 		attrs.Attribute("Subnet Id", iaas.GetSubnetId())
 		attrs.Attribute("Security Group", iaas.GetSecurityGroupName())
-		attrs.PrintAttributes()
 	}
 	return nil
 }

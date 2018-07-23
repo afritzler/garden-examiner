@@ -40,13 +40,16 @@ func (this *describe_output) Out(ctx *context.Context) error {
 	i := this.Elems.Iterator()
 	for i.HasNext() {
 		fmt.Printf("---\n")
-		Describe(i.Next().(gube.Shoot))
+		Describe(i.Next().(gube.Shoot), nil)
 	}
 	return nil
 }
 
-func Describe(s gube.Shoot) error {
-	attrs := util.NewAttributeSet()
+func Describe(s gube.Shoot, add *util.AttributeSet) error {
+	attrs := add
+	if add == nil {
+		attrs = util.NewAttributeSet()
+	}
 	attrs.Attribute("Shoot", s.GetName().GetName())
 	attrs.Attribute("Project", s.GetName().GetProjectName())
 	p, err := s.GetProject()
@@ -88,13 +91,15 @@ func Describe(s gube.Shoot) error {
 		}
 	} else {
 	}
-	attrs.PrintAttributes()
 	//iaas, err := s.GetIaaSInfo()
-	iaas.Describe(s)
+	iaas.Describe(s, attrs)
 
 	e := s.GetError()
 	if e != "" {
-		fmt.Printf("Error: %s\n", s.GetError())
+		attrs.Attribute("Error", s.GetError())
+	}
+	if add == nil {
+		attrs.PrintAttributes()
 	}
 	return nil
 }

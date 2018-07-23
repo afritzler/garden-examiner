@@ -7,20 +7,19 @@ import (
 	"strings"
 )
 
+/////////////////////////////////////////////////////////////////////////////////
 func Kubectl(config []byte, input []byte, args ...string) error {
-	r, w, err := os.Pipe()
+	ci, err := NewTempFileInput(config)
 	if err != nil {
 		return err
 	}
-	defer r.Close()
-	go func() {
-		w.Write([]byte(config))
-		w.Close()
-	}()
+	defer ci.CleanupFunction()()
 
-	eff := append([]string{fmt.Sprintf("--kubeconfig=/dev/fd/%d", 3)}, args...)
+	files, cfgPath := ci.InheritedFiles(nil)
+
+	eff := append([]string{fmt.Sprintf("--kubeconfig=%s", cfgPath)}, args...)
 	fmt.Printf("kubectl %v\n", eff)
-	return ExecProcess(input, []*os.File{r}, "kubectl", eff...)
+	return ExecProcess(input, files, "kubectl", eff...)
 }
 
 func ExecProcess(input []byte, extra []*os.File, c string, args ...string) error {
@@ -56,7 +55,7 @@ func ExecProcess(input []byte, extra []*os.File, c string, args ...string) error
 	return err
 }
 
-func ExecCmd(cmd string, environment ...string) (err error) {
+func ExecCmd(cmd string, extra []*os.File, environment ...string) (err error) {
 	var command *exec.Cmd
 	parts := strings.Fields(cmd)
 	head := parts[0]
@@ -66,6 +65,11 @@ func ExecCmd(cmd string, environment ...string) (err error) {
 		parts = nil
 	}
 	command = exec.Command(head, parts...)
+	if extra != nil {
+		for _, f := range extra {
+			f.Close()
+		}
+	}
 	for index, env := range environment {
 		if index == 0 {
 			command.Env = append(os.Environ(),

@@ -25,7 +25,7 @@ func init() {
 
 			// kill -SIGINT XXXX or Ctrl+c
 			case syscall.SIGINT:
-				fmt.Println("Warikomi")
+				fmt.Println("abort")
 
 			// kill -SIGTERM XXXX
 			case syscall.SIGTERM:

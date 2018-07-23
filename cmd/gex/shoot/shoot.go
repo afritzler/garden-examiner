@@ -61,7 +61,7 @@ func (this *_TypeHandler) GetFilter() util.Filter {
 	return filters
 }
 func (this *_TypeHandler) GetDefault(opts *cmdint.Options) *string {
-	return opts.GetOptionValue(constants.O_SEL_SHOOT)
+	return opts.LookupOptionValue(constants.O_SEL_SHOOT)
 }
 func (this *_TypeHandler) RequireScan(name string) bool {
 	i := strings.Index(name, "/")

@@ -15,6 +15,7 @@ type OpenstackHandler struct {
 type OpenstackInfo struct {
 	*_IaaSInfo
 	authURL string
+	secret  map[string]string
 }
 
 var _ IaaSInfo = &OpenstackInfo{}
@@ -22,6 +23,12 @@ var _ IaaSInfo = &OpenstackInfo{}
 func (this *OpenstackHandler) GetIaaSInfo(shoot Shoot) (IaaSInfo, error) {
 	info := &OpenstackInfo{_IaaSInfo: NewStandardIaaSInfo(shoot)}
 
+	secret, err := shoot.GetCloudProviderConfig()
+	if err == nil {
+		info.secret = secret
+	} else {
+		info.secret = map[string]string{}
+	}
 	//fmt.Printf("OS: %+v\n", info.GetInfraOutputs())
 
 	p, err := shoot.GetProfile()
@@ -42,6 +49,19 @@ func (this *OpenstackInfo) GetKeyInfo() string {
 
 func (this *OpenstackInfo) GetAuthURL() string {
 	return this.authURL
+}
+
+func (this *OpenstackInfo) GetDomainName() string {
+	return this.secret["domainName"]
+}
+func (this *OpenstackInfo) GetTenantName() string {
+	return this.secret["tenantName"]
+}
+func (this *OpenstackInfo) GetUserName() string {
+	return this.secret["username"]
+}
+func (this *OpenstackInfo) GetPassword() string {
+	return this.secret["password"]
 }
 
 func (this *OpenstackInfo) GetRouterId() string {

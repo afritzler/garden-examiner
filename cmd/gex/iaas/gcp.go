@@ -3,8 +3,6 @@ package iaas
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -46,28 +44,22 @@ func (this *gcp) Execute(shoot gube.Shoot, config map[string]string, args ...str
 		return fmt.Errorf("cannot find project id in account list: %s", err)
 	}
 
-	tmpfile, err := ioutil.TempFile("/tmp", "serviceaccount")
+	sa, err := util.NewTempFileInput(serviceaccount)
 	if err != nil {
 		return fmt.Errorf("cannot get temporary key file name: %s", err)
 	}
-	defer Cleanup(func() { os.Remove(tmpfile.Name()) })()
-
-	if _, err := tmpfile.Write(serviceaccount); err != nil {
-		return fmt.Errorf("cannot write temporary key file '%s' for key file: %s", tmpfile.Name, err)
-	}
-	if err := tmpfile.Close(); err != nil {
-		log.Fatal(err)
-	}
-
+	defer sa.CleanupFunction()()
 	defer Cleanup(func() {
-		util.ExecCmd("gcloud config set account " + tmpAccount)
+		util.ExecCmd("gcloud config set account "+tmpAccount, nil)
 	})()
 
-	err = util.ExecCmd("gcloud auth activate-service-account --key-file=" + tmpfile.Name())
+	files, keyfile := sa.InheritedFiles(nil)
+
+	err = util.ExecCmd("gcloud auth activate-service-account --key-file="+keyfile, nil)
 	if err != nil {
 		return fmt.Errorf("cannot activate service account: %s", err)
 	}
-	err = util.ExecCmd("gcloud " + strings.Join(args, " ") + " " + "--account=" + account + " --project=" + project)
+	err = util.ExecCmd("gcloud "+strings.Join(args, " ")+" "+"--account="+account+" --project="+project, files)
 	if err != nil {
 		return fmt.Errorf("cannot execute 'gcloud': %s", err)
 	}
@@ -94,23 +86,21 @@ func (this *gcp) Export(shoot gube.Shoot, config map[string]string, cachedir str
 	}
 
 	fmt.Printf("activating gcloud service account for %s\n", shoot.GetName())
-	err = util.ExecCmd("gcloud auth activate-service-account --key-file=" + keyfile)
+	err = util.ExecCmd("gcloud auth activate-service-account --key-file="+keyfile, nil)
 	if err != nil {
 		return fmt.Errorf("cannot activate service account: %s", err)
 	}
 	return nil
 }
 
-func (this *gcp) Describe(shoot gube.Shoot) error {
+func (this *gcp) Describe(shoot gube.Shoot, attrs *util.AttributeSet) error {
 	info, err := shoot.GetIaaSInfo()
 	if err == nil {
 		iaas := info.(*gube.GCPInfo)
-		attrs := util.NewAttributeSet()
-		fmt.Printf("GCP Information:\n")
+		attrs.Attribute("GCP Information", "")
 		attrs.Attribute("Region", iaas.GetRegion())
 		attrs.Attribute("VPC Name", iaas.GetVpcName())
 		attrs.Attribute("Service Accout EMail", iaas.GetServiceAccountEMail())
-		attrs.PrintAttributes()
 	}
 	return nil
 }

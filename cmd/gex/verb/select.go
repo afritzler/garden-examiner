@@ -43,10 +43,10 @@ func cmd_select(opts *cmdint.Options) error {
 		return fmt.Errorf("No GEXDIR set")
 	}
 
-	gap := opts.GetOptionValue(constants.O_SEL_GARDEN)
-	shp := opts.GetOptionValue(constants.O_SEL_SHOOT)
-	sep := opts.GetOptionValue(constants.O_SEL_SEED)
-	prp := opts.GetOptionValue(constants.O_SEL_PROJECT)
+	gap := opts.LookupOptionValue(constants.O_SEL_GARDEN)
+	shp := opts.LookupOptionValue(constants.O_SEL_SHOOT)
+	sep := opts.LookupOptionValue(constants.O_SEL_SEED)
+	prp := opts.LookupOptionValue(constants.O_SEL_PROJECT)
 	if !data.IsEmpty(gap) {
 		fmt.Printf("GARDEN  = %s\n", *gap)
 		found++

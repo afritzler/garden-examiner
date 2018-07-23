@@ -80,15 +80,14 @@ func Describe(s gube.Seed, shoot_count ShootCount) error {
 	}
 	attrs.Attribute("Number of Nodes", cnt)
 	attrs.Attribute("Number of Shoots", strconv.Itoa(shoot_count(s.GetName())))
-	attrs.PrintAttributes()
 	if s.GetShootName() != nil {
 		sh, err := s.AsShoot()
 		if err != nil {
 			fmt.Printf("Seed is shooted, but cannot get shoot: %s\n", err)
 		} else {
-			fmt.Printf("Seed is shooted with ")
-			shoot.Describe(sh)
+			shoot.Describe(sh, attrs)
 		}
 	}
+	attrs.PrintAttributes()
 	return nil
 }
