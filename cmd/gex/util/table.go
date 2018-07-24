@@ -36,7 +36,7 @@ func FormatTable(gap string, data [][]string) {
 		}
 	}
 
-	if len(columns) <= 3 && max > 100 {
+	if len(columns) > 2 && max > 100 {
 		first := []string{}
 		setSep := false
 		for i, row := range data {
@@ -44,7 +44,11 @@ func FormatTable(gap string, data [][]string) {
 				first = row
 			} else {
 				for c, col := range row {
-					fmt.Printf("%s%s: %s\n", gap, first[c], col)
+					if c < len(first) {
+						fmt.Printf("%s%s: %s\n", gap, first[c], col)
+					} else {
+						fmt.Printf("%s%d: %s\n", gap, c, col)
+					}
 					setSep = true
 				}
 				if setSep == true {
@@ -60,7 +64,11 @@ func FormatTable(gap string, data [][]string) {
 			if i < len(formats) {
 				f = formats[i]
 			}
-			format = fmt.Sprintf("%s%%%s%ds ", format, f, col)
+			if i == len(columns)-1 && f == "-" {
+				format = fmt.Sprintf("%s%%s ", format)
+			} else {
+				format = fmt.Sprintf("%s%%%s%ds ", format, f, col)
+			}
 		}
 		format = format[:len(format)-1] + "\n"
 		for _, row := range data {
