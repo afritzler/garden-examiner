@@ -19,17 +19,19 @@ func init() {
 			"selection command or the appropriate selection option.",
 			"If nothing is selected shell is run for the garden cluster.",
 		).
-		ArgOption(constants.O_NODE).Short('n').ArgDescription("node name").
+		ArgOption(constants.O_NODE).Short('n').ArgDescription("<name>").Description("node name").
+		ArgOption(constants.O_POD).Short('p').ArgDescription("<name>").Description("pod name").
 		CatchUnknownCommand(catch_cluster).
 		SimpleCommand("garden", cmd_shell_garden).
-		ArgOption(constants.O_NODE).Short('n').ArgDescription("node name").
+		ArgOption(constants.O_NODE).Short('n').ArgDescription("<name>").Description("node name").
+		ArgOption(constants.O_POD).Short('p').ArgDescription("<name>").Description("pod name").
 		CmdDescription("run shell for garden cluster")
 }
 
 func cmd_shell_garden(opts *cmdint.Options) error {
 	fmt.Printf("using garden: %v\n", opts.Arguments)
 	ctx := context.Get(opts)
-	out := output.NewShellOutput(opts.GetOptionValue(constants.O_NODE), nil)
+	out := output.NewShellOutput(opts.GetOptionValue(constants.O_NODE), opts.GetOptionValue(constants.O_POD), nil)
 	out.Add(ctx, ctx.Garden)
 	return out.Out(ctx)
 }

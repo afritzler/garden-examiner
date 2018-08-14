@@ -83,6 +83,14 @@ func Describe(s gube.Shoot, add *util.AttributeSet) error {
 		cnt = fmt.Sprintf("%d", c)
 	}
 	attrs.Attribute("Number of Nodes", cnt)
+
+	cnt = "unknown"
+	c, err = s.GetPodCount()
+	if err == nil {
+		cnt = fmt.Sprintf("%d", c)
+	}
+	attrs.Attribute("Number of Pods", cnt)
+
 	attrs.Attribute("State", s.GetState())
 	cond := s.GetConditionErrors()
 	if cond != nil {

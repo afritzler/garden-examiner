@@ -23,6 +23,7 @@ const (
 	O_NOFILTER = "nofilter"
 
 	O_NODE = "node"
+	O_POD  = "pod"
 
 	O_OUTPUT = "output"
 	O_SORT   = "sort"

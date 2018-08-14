@@ -1,8 +1,6 @@
 package shoot
 
 import (
-	"fmt"
-
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/cmdline"
@@ -15,7 +13,8 @@ import (
 func init() {
 	filters.AddOptions(cmdline.AddAsVerb(GetCmdTab(), "shell", cmd_shell).
 		CmdDescription("run shell on node").CmdArgDescription("[<shoot>] <node>")).
-		ArgOption(constants.O_NODE).Short('n').ArgDescription("node name").
+		ArgOption(constants.O_NODE).Short('n').ArgDescription("<name>").Description("node name").
+		ArgOption(constants.O_POD).Short('p').ArgDescription("<name>").Description("pod name").
 		FlagOption("cp").Short('c').ArgDescription("switch to control plane")
 }
 
@@ -34,6 +33,5 @@ func cmd_shell(opts *cmdint.Options) error {
 	if opts.IsFlag("cp") {
 		mapper = seed_mapper
 	}
-	fmt.Printf("opts: %#v\n", opts)
-	return cmdline.ExecuteOutput(opts, output.NewShellOutput(opts.GetOptionValue(constants.O_NODE), mapper), TypeHandler)
+	return cmdline.ExecuteOutput(opts, output.NewShellOutput(opts.GetOptionValue(constants.O_NODE), opts.GetOptionValue(constants.O_POD), mapper), TypeHandler)
 }

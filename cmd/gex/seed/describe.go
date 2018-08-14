@@ -79,6 +79,14 @@ func Describe(s gube.Seed, shoot_count ShootCount) error {
 		cnt = fmt.Sprintf("%d", c)
 	}
 	attrs.Attribute("Number of Nodes", cnt)
+
+	cnt = "unknown"
+	c, err = s.GetPodCount()
+	if err == nil {
+		cnt = fmt.Sprintf("%d", c)
+	}
+	attrs.Attribute("Number of Pods", cnt)
+
 	attrs.Attribute("Number of Shoots", strconv.Itoa(shoot_count(s.GetName())))
 	if s.GetShootName() != nil {
 		sh, err := s.AsShoot()

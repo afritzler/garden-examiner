@@ -5,11 +5,13 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/mandelsoft/cmdint/pkg/cmdint"
 
 	"github.com/afritzler/garden-examiner/cmd/gex/context"
+	"github.com/afritzler/garden-examiner/cmd/gex/util"
 	"github.com/afritzler/garden-examiner/pkg"
 )
 
@@ -19,11 +21,8 @@ type ShellOutput struct {
 
 var _ Output = &ShellOutput{}
 
-func NewShellOutput(node *string, mapper ElementMapper) Output {
-	args := []string{}
-	if node != nil && *node != "" {
-		args = []string{*node}
-	}
+func NewShellOutput(node *string, pod *string, mapper ElementMapper) Output {
+	args := []string{util.StringValue(node), util.StringValue(pod)}
 	return &ShellOutput{NewKubectlOutput(args, mapper)}
 }
 
@@ -33,33 +32,68 @@ func (this *ShellOutput) Out(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	hostnames := map[string]string{}
-	names := []string{}
+	nodenames := []string{}
+
+	podnodes := map[string]string{}
+	podnames := []string{}
+
 	name := ""
-	lookup := ""
+	lookupNode := ""
+	lookupPod := ""
+
 	if len(this.GetArgs()) > 0 {
-		lookup = this.GetArgs()[0]
+		lookupNode = this.GetArgs()[0]
 	}
+
 	for _, n := range nodes {
 		host := get_label(n.GetObjectMeta(), "kubernetes.io/hostname")
-		names = append(names, n.GetName())
-		if len(lookup) >= 5 && strings.HasSuffix(n.GetName(), lookup) {
+		nodenames = append(nodenames, n.GetName())
+		if len(lookupNode) >= 5 && strings.HasSuffix(n.GetName(), lookupNode) {
 			name = n.GetName()
 		}
 		hostnames[n.GetName()] = host
 	}
-	if name == "" && lookup != "" {
-		name, _ = cmdint.SelectBest(lookup)
+
+	if len(this.GetArgs()) > 1 {
+		lookupPod = this.GetArgs()[1]
+		if lookupPod != "" {
+			var pods map[string]corev1.Pod
+			if i := strings.Index(lookupPod, "/"); i > 0 {
+				ns := lookupPod[0:i]
+				lookupPod = lookupPod[i+1:]
+				pods, err = cluster.GetPods(ns)
+			} else {
+				pods, err = cluster.GetPods("")
+			}
+			if err != nil {
+				return err
+			}
+			for _, n := range pods {
+				podnames = append(podnames, n.GetName())
+				podnodes[n.GetName()] = n.Spec.NodeName
+			}
+		}
+	}
+
+	if name == "" && len(podnames)+len(nodenames) > 0 {
+		pname, c := cmdint.SelectBest(lookupPod, podnames...)
+		name, _ = podnodes[pname]
+		nname, nc := cmdint.SelectBest(lookupNode, nodenames...)
+		if nc < c {
+			name = nname
+		}
 	}
 	if name == "" {
 		fmt.Printf("select one of:\n")
-		for _, n := range names {
+		for _, n := range nodenames {
 			fmt.Printf("- %s (%s)\n", n, hostnames[n])
 		}
-		if lookup == "" {
+		if lookupNode == "" {
 			return nil
 		}
-		return fmt.Errorf("node '%s' not found", lookup)
+		return fmt.Errorf("node '%s' not found", lookupNode)
 	}
 	client, err := cluster.GetClientset()
 	if err != nil {
@@ -103,6 +137,8 @@ metadata:
 spec:
   containers:
   - image: busybox
+    securityContext:
+      privileged: true
     name: root-container
     command:
     - sleep 

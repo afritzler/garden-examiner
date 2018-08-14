@@ -22,6 +22,8 @@ type Cluster interface {
 
 	GetNodeCount() (int, error)
 	GetNodes() (map[string]corev1.Node, error)
+	GetPodCount() (int, error)
+	GetPods(namespace string) (map[string]corev1.Pod, error)
 	GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error)
 	GetIngress(name, ns string) (*extv1beta1.Ingress, error)
 	GetConfigMap(name, ns string) (*corev1.ConfigMap, error)
@@ -125,6 +127,34 @@ func (this *cluster) GetNodes() (map[string]corev1.Node, error) {
 		nodes[n.GetName()] = n
 	}
 	return nodes, nil
+}
+
+func (this *cluster) GetPodCount() (int, error) {
+	cs, err := this.GetClientset()
+	if err != nil {
+		return 0, err
+	}
+	list, err := cs.CoreV1().Pods("").List(metav1.ListOptions{})
+	if err != nil {
+		return 0, fmt.Errorf("failed to get pod count for %s: %s", this.GetClusterKey(), err)
+	}
+	return len(list.Items), nil
+}
+
+func (this *cluster) GetPods(namespace string) (map[string]corev1.Pod, error) {
+	cs, err := this.GetClientset()
+	if err != nil {
+		return nil, err
+	}
+	list, err := cs.CoreV1().Pods(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pods for %s: %s", this.GetClusterKey(), err)
+	}
+	pods := map[string]corev1.Pod{}
+	for _, n := range list.Items {
+		pods[n.GetName()] = n
+	}
+	return pods, nil
 }
 
 func (this *cluster) GetSecretByRef(secretref corev1.SecretReference) (*corev1.Secret, error) {
